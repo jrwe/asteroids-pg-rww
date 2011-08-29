@@ -59,9 +59,10 @@ function onloadHandler()
    }*/
    // attach to the image onload handler
    // once the background is loaded, we can boot up the game
-   g_backgroundImg.src = 'images/bg3.jpg';
+   g_backgroundImg.src = 'images/bg3_1.jpg';
    g_backgroundImg.onload = function()
    {
+        console.info("!");
       // init our game with Game.Main derived instance
       GameHandler.init();
       GameHandler.start(new Asteroids.Main());
