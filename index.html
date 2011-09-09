@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-	<meta name="viewport" content="width=320; user-scalable=no" />
-  	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
-  	
-	  <title>Canvasteroids</title>
-	  <script type="text/javascript" charset="utf-8" src="scripts/phonegap-1.0.0.js"></script>
-	  <script type="text/javascript" src="scripts/mathlib.js"></script>
-	  <script type="text/javascript" src="scripts/gamelib.js"></script>
-	  <script type="text/javascript" src="scripts/asteroids_main.js"></script>
-	  <script type="text/javascript" src="scripts/asteroids_player.js"></script>
-	  <script type="text/javascript" src="scripts/asteroids_weapons.js"></script>
-	  <script type="text/javascript" src="scripts/asteroids_enemies.js"></script>
-	  <script type="text/javascript" src="scripts/asteroids_effects.js"></script>
-	  <style type="text/css">
+      <title>Asteroids Game - HTML 5 Canvas API example and JavaScript demo</title>
+      <script type="text/javascript" src="scripts/soundmanager2-nodebug-jsmin.js"></script>
+      <script type="text/javascript" src="scripts/mathlib.js"></script>
+      <script type="text/javascript" src="scripts/gamelib.js"></script>
+      <script type="text/javascript" src="scripts/asteroids_main.js"></script>
+      <script type="text/javascript" src="scripts/asteroids_player.js"></script>
+      <script type="text/javascript" src="scripts/asteroids_weapons.js"></script>
+      <script type="text/javascript" src="scripts/asteroids_enemies.js"></script>
+      <script type="text/javascript" src="scripts/asteroids_effects.js"></script>
+      <script type="text/javascript" src="scripts/asteroids_DEBUG.js"></script>
+      <style type="text/css">
          body { font-family: Arial, Helvetica; color: lightblue }
          .title { padding-top: 6px; text-align: center; font-weight: bold; color: red }
          P { padding-left: 2em; padding-top: 0; padding-bottom: 0; line-height: 1.0em }
@@ -23,17 +21,28 @@
          a, a:visited, a:active, a:hover { color: #ffffff }
          .button-overlay { float: right }
       </style>
-      <meta name="description" content="Asteroids - HTML 5 Canvas and JavaScript game by Kevin Roast - an example of what can be acheived without Flash plugins using the canvas APIs" />
+      <script src="http://platform.twitter.com/widgets.js" type="text/javascript"></script>
+      <script>
+         soundManager.debugMode = true;
+         soundManager.url = 'swf/';
+         soundManager.flashVersion = 9;
+         soundManager.onready(function() {
+           onloadHandler();
+           // start mp3 background music?
+         });
+      </script>
+      <meta name="description" content="Asteroids - HTML 5 Canvas and JavaScript demo by Kevin Roast - an example of what can be acheived without Flash plugins using the canvas APIs" />
    </head>
    
-   <body onload="onloadHandler();" style="background-color: #000000">
+   <body style="background-color: #000000">
       
+      <div class="button-overlay"><a href="http://twitter.com/share?url=http://www.kevs3d.co.uk/dev/asteroids/&text=Asteroids%20-%20%23HTML5%20%23Canvas%20and%20%23JavaScript%20demo%20(by%20@kevinroast)" class="twitter-share-button">Tweet</a></div>
       <div class="title">Asteroids - HTML 5 Canvas and JavaScript demo</div>
       <div style="padding: 12px; min-width: 900px">
          <table align="center">
             <tr>
                <td>
-                  <canvas id="canvas" width="320" height="480" style="border: 2px solid #aaaaaa;"></canvas>
+                  <canvas id="canvas" width="640" height="640" style="border: 2px solid #aaaaaa;"></canvas>
                </td>
                <td>
                   <div>
