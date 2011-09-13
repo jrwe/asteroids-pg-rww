@@ -2,6 +2,7 @@
 <html lang="en">
     <head>
       <title>Asteroids Game - HTML 5 Canvas API example and JavaScript demo</title>
+      <meta name="viewport" content="width=device-width,maximum-scale=1.0, initial-scale=1.0, user-scalable=no"/>
       <script type="text/javascript" src="scripts/lib/xui-2.2.0.min.js"></script>
       <script type="text/javascript" src="scripts/soundmanager2-nodebug-jsmin.js"></script>
       <script type="text/javascript" src="scripts/mathlib.js"></script>
@@ -11,15 +12,9 @@
       <script type="text/javascript" src="scripts/asteroids_weapons.js"></script>
       <script type="text/javascript" src="scripts/asteroids_enemies.js"></script>
       <script type="text/javascript" src="scripts/asteroids_effects.js"></script>
-      <script type="text/javascript" src="scripts/asteroids_DEBUG.js"></script>
-      <style type="text/css">
-         body { font-family: Arial, Helvetica; color: lightblue }
-         .title { padding-top: 6px; text-align: center; font-weight: bold; color: red }        
-         .bold { font-weight: bold }
-         .small { text-align:center; font-size: 0.75em }        
-         .button-overlay { float: right }
-      </style>      
+      <script type="text/javascript" src="scripts/asteroids_DEBUG.js"></script>            
       <script>
+      	window.ondragstart = function() { return false; };
          soundManager.debugMode = true;
          soundManager.url = 'swf/';
          soundManager.flashVersion = 9;
@@ -28,10 +23,9 @@
            // start mp3 background music?
          });
       </script>
-      <meta name="description" content="Asteroids - HTML 5 Canvas and JavaScript demo by Kevin Roast - an example of what can be acheived without Flash plugins using the canvas APIs" />
    </head>
    
    <body style="background-color: #000000">
-      <canvas id="canvas" width="640" height="640" style="border: 1px solid #aaaaaa;"></canvas>      
+      <canvas id="canvas" width="320" height="320" style="border: 1px solid #aaaaaa;"></canvas>      
    </body>
 </html>

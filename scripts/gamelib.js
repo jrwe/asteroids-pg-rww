@@ -158,7 +158,8 @@ if (typeof Game == "undefined" || !Game)
       };
       
       //PORT : touch events
-      x$(document).on("touchstart", function(e){
+      //x$(document).on("touchstart", function(e){
+      x$(document).on("mousedown", function(e){
     	  
     	  if (me.sceneIndex !== -1)
           {
@@ -174,6 +175,22 @@ if (typeof Game == "undefined" || !Game)
           }
     	  
       });//end touchstart
+      
+      //x$(document).on("touchend", function(e){
+      x$(document).on("mouseup", function(e){
+    	  if (me.sceneIndex !== -1)
+          {
+             if (me.scenes[me.sceneIndex].onTouchEnd(e))
+             {
+                // if the key is handled, prevent any further events
+                if (e)
+                {
+                   event.preventDefault();
+                   event.stopPropagation();
+                }
+             }
+          }
+      });//end touchend
       
    };
    
@@ -318,7 +335,7 @@ if (typeof Game == "undefined" || !Game)
       },
       
       onRenderScene: function onRenderScene(ctx)
-      {
+      {    	  
       },
       
       onRenderInterval: function onRenderInterval(ctx)

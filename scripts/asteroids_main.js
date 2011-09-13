@@ -42,6 +42,34 @@ var g_backgroundImg = new Image();
 var g_playerImg = new Image();
 var g_enemyshipImg = new Image();
 
+//PORT: device image
+//joystick
+var g_joystickImg = new Image();
+var joystickX = 0;
+var joystickY = 200;
+var joystickUpPos = {minX:30, minY: 270, maxX:100, maxY:330};
+var joystickLeftPos = {minX:0, minY: 291, maxX:69, maxY:371};
+var joystickRightPos = {minX:104, minY: 291, maxX:130, maxY:371};
+var joystickDownPos = {minX:30, minY: 330, maxX:100, maxY:390};
+
+
+//fire button
+var g_fireButtonImg = new Image();
+var fireButtonX = 130;
+var fireButtonY = 280;
+var fireButtonPos = {minX:140, minY: 349, maxX:172, maxY:383};
+
+//bomb button
+var g_bombButtonImg = new Image();
+var bombButtonX = 175;
+var bombButtonY = 280;
+var bombButtonPos = {minX:185, minY: 349, maxX:217, maxY:383};
+
+//shield button
+var g_shieldButtonImg = new Image();
+var shieldButtonX = 220;
+var shieldButtonY = 280;
+var shieldButtonPos = {minX:230, minY: 349, maxX:262, maxY:383};
 
 /**
  * Global window onload handler
@@ -102,7 +130,12 @@ if (typeof Asteroids == "undefined" || !Asteroids)
       loader.addImage(g_asteroidImg3, 'images/asteroid3.png');
       loader.addImage(g_asteroidImg4, 'images/asteroid4.png');
       loader.addImage(g_shieldImg, 'images/shield.png');
-      loader.addImage(g_enemyshipImg, 'images/enemyship1.png');
+      loader.addImage(g_enemyshipImg, 'images/enemyship1.png');      
+      //PORT:image
+      loader.addImage(g_joystickImg, 'images/vjoystick.png');
+      loader.addImage(g_fireButtonImg, 'images/fire.png');
+      loader.addImage(g_bombButtonImg, 'images/bomb.png');
+      loader.addImage(g_shieldButtonImg, 'images/shield_button.png');
       
       // the attactor scene is displayed first and responsible for allowing the
       // player to start the game once all images have been loaded
@@ -316,11 +349,11 @@ if (typeof Asteroids == "undefined" || !Asteroids)
          if (this.imagesLoaded)
          {
             var colour = "rgba(255,255,255," + this.fadeRGB + ")";
-            f(ctx, "TAP to continue", "10pt Courier New", GameHandler.width/2 - 100, GameHandler.height/2, colour);
+            f(ctx, "TAP to continue", "10pt Courier New", GameHandler.width/2 - 70, GameHandler.height/2, colour);            
          }
          else
          {
-            f(ctx, "Please wait... Loading Images...", "10pt Courier New", GameHandler.width/2 - 200, GameHandler.height/2, "white");
+            f(ctx, "Please wait... Loading Images...", "10pt Courier New", GameHandler.width/2 - 110, GameHandler.height/2, "white");
          }
       },
       
@@ -670,7 +703,7 @@ if (typeof Asteroids == "undefined" || !Asteroids)
        * Scene before rendering event handler
        */
       onBeforeRenderScene: function onBeforeRenderScene()
-      {
+      {    	  
          // handle key input
          if (this.input.left)
          {
@@ -719,7 +752,7 @@ if (typeof Asteroids == "undefined" || !Asteroids)
        * Scene rendering event handler
        */
       onRenderScene: function onRenderScene(ctx)
-      {
+      {    	 
          // render the game actors
          this.renderActors(ctx);
          
@@ -787,10 +820,69 @@ if (typeof Asteroids == "undefined" || !Asteroids)
       },
       
       /**
+       * Scene onTouchStart method
+       */
+      onTouchStart: function onTouchStart(e){
+    	  var x = e.screenX, y=e.screenY;
+    	  console.log(e.screenX,e.screenY);
+    	  if(x>=joystickUpPos.minX && x<=joystickUpPos.maxX && y>=joystickUpPos.minY && y<=joystickUpPos.maxY){
+    		  //console.log('UP');
+    		  this.input.thrust = true;
+              return true;
+    	  }
+    	  else if(x>=joystickLeftPos.minX && x<=joystickLeftPos.maxX && y>=joystickLeftPos.minY && y<=joystickLeftPos.maxY){
+    		  //console.log('Left');
+    		  this.input.left = true;
+              return true;
+    	  }
+    	  else if(x>=joystickRightPos.minX && x<=joystickRightPos.maxX && y>=joystickRightPos.minY && y<=joystickRightPos.maxY){
+    		  //console.log('Right');
+    		  this.input.right = true;
+              return true;
+    	  }
+    	  else if(x>=joystickDownPos.minX && x<=joystickDownPos.maxX && y>=joystickDownPos.minY && y<=joystickDownPos.maxY){
+    		  //console.log('Down');
+    		  //not use for now
+    		  //this.input.shield = true;
+              //return true;
+    		  
+    	  }
+    	  else if(x>=fireButtonPos.minX  && x<=fireButtonPos.maxX && y>=fireButtonPos.minY && y<=fireButtonPos.maxY){
+    		  //console.log('Right');
+    		  this.input.fireA = true;
+              return true;
+    	  }
+    	  else if(x>=bombButtonPos.minX  && x<=bombButtonPos.maxX && y>=bombButtonPos.minY && y<=bombButtonPos.maxY){    		  
+    		  this.input.fireB = true;
+              return true;
+    	  }
+    	  else if(x>=shieldButtonPos.minX  && x<=shieldButtonPos.maxX && y>=shieldButtonPos.minY && y<=shieldButtonPos.maxY){    		  
+    		  this.input.shield = true;
+              return true;
+    	  }
+    	  
+      },
+      /**
+       * Scene onTouchEnd method
+       */
+      onTouchEnd: function onTouchEnd(e){
+    	  //console.log('onTouchEnd');
+    	  this.input.left = false;
+    	  this.input.right = false;
+    	  this.input.thrust = false;
+    	  this.input.shield = false;
+    	  this.input.fireA = false;
+    	  this.input.fireB = false;
+    	  
+    	  return true;
+    	  
+      },
+      
+      /**
        * Scene onKeyDownHandler method
        */
       onKeyDownHandler: function onKeyDownHandler(keyCode)
-      {
+      {    	  
          switch (keyCode)
          {
             case KEY.LEFT:
@@ -823,8 +915,7 @@ if (typeof Asteroids == "undefined" || !Asteroids)
             }
             
             case KEY.SPACE:
-            {
-               consonle.log('SPACE');
+            {               
                this.input.fireA = true;
                return true;
                break;
@@ -1447,6 +1538,13 @@ if (typeof Asteroids == "undefined" || !Asteroids)
             if (BITMAPS)
             {
                ctx.drawImage(g_playerImg, 0, 0, 64, 64, 350+(i*20), 0, 16, 16);
+               
+               //PORT: draw images
+               ctx.drawImage(g_joystickImg, joystickX, joystickY);
+               ctx.drawImage(g_fireButtonImg, fireButtonX, fireButtonY);
+               ctx.drawImage(g_bombButtonImg, bombButtonX, bombButtonY);
+               ctx.drawImage(g_shieldButtonImg, shieldButtonX, shieldButtonY);
+               
             }
             else
             {
@@ -1498,6 +1596,8 @@ if (typeof Asteroids == "undefined" || !Asteroids)
          {
             Game.fillText(ctx, "FPS: " + GameHandler.maxfps, "12pt Courier New", 0, GameHandler.height - 2, "lightblue");
          }
+         
+         //PORT: draw joystick
          
          ctx.restore();
       }
