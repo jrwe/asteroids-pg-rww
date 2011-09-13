@@ -47,29 +47,29 @@ var g_enemyshipImg = new Image();
 var g_joystickImg = new Image();
 var joystickX = 0;
 var joystickY = 200;
-var joystickUpPos = {minX:30, minY: 270, maxX:100, maxY:330};
-var joystickLeftPos = {minX:0, minY: 291, maxX:69, maxY:371};
-var joystickRightPos = {minX:104, minY: 291, maxX:130, maxY:371};
-var joystickDownPos = {minX:30, minY: 330, maxX:100, maxY:390};
+var joystickUpPos = {minX:30, minY: 200, maxX:90, maxY:260};
+var joystickLeftPos = {minX:0, minY: 230, maxX:60, maxY:290};
+var joystickRightPos = {minX:60, minY: 230, maxX:120, maxY:290};
+var joystickDownPos = {minX:30, minY: 260, maxX:90, maxY:320};
 
 
 //fire button
 var g_fireButtonImg = new Image();
 var fireButtonX = 130;
 var fireButtonY = 280;
-var fireButtonPos = {minX:140, minY: 349, maxX:172, maxY:383};
+var fireButtonPos = {minX:130, minY: 280, maxX:170, maxY:320};
 
 //bomb button
 var g_bombButtonImg = new Image();
 var bombButtonX = 175;
 var bombButtonY = 280;
-var bombButtonPos = {minX:185, minY: 349, maxX:217, maxY:383};
+var bombButtonPos = {minX:175, minY: 280, maxX:215, maxY:320};
 
 //shield button
 var g_shieldButtonImg = new Image();
 var shieldButtonX = 220;
 var shieldButtonY = 280;
-var shieldButtonPos = {minX:230, minY: 349, maxX:262, maxY:383};
+var shieldButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
 
 /**
  * Global window onload handler
@@ -825,8 +825,8 @@ if (typeof Asteroids == "undefined" || !Asteroids)
        * Scene onTouchStart method
        */
       onTouchStart: function onTouchStart(e){
-    	  var x = e.screenX, y=e.screenY;
-    	  //console.log(e.screenX,e.screenY);
+    	  var x = e.clientX, y=e.clientY;
+    	  //console.log(e,x,y,joystickUpPos);
     	  if(x>=joystickUpPos.minX && x<=joystickUpPos.maxX && y>=joystickUpPos.minY && y<=joystickUpPos.maxY){
     		  //console.log('UP');
     		  this.input.thrust = true;
