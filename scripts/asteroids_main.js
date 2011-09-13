@@ -316,11 +316,11 @@ if (typeof Asteroids == "undefined" || !Asteroids)
          if (this.imagesLoaded)
          {
             var colour = "rgba(255,255,255," + this.fadeRGB + ")";
-            f(ctx, "Press SPACE to continue", "18pt Courier New", GameHandler.width/2 - 150, GameHandler.height/2, colour);
+            f(ctx, "TAP to continue", "10pt Courier New", GameHandler.width/2 - 100, GameHandler.height/2, colour);
          }
          else
          {
-            f(ctx, "Please wait... Loading Images...", "18pt Courier New", GameHandler.width/2 - 200, GameHandler.height/2, "white");
+            f(ctx, "Please wait... Loading Images...", "10pt Courier New", GameHandler.width/2 - 200, GameHandler.height/2, "white");
          }
       },
       
@@ -355,11 +355,22 @@ if (typeof Asteroids == "undefined" || !Asteroids)
             var y = ypos + (Math.sin(offset) * RAD) * this.mult;
             var x = xpos + (Math.cos(offset++) * RAD) * (this.mult/2);
             var f = (BITMAPS ? Game.fillText : Game.drawText);
-            f(ctx, txt[i], "36pt Courier New", x + i*30, y, "white");
+            f(ctx, txt[i], "20pt Courier New", x + i*30, y, "white");
          }
          this.sine += 0.10;
       },
       
+      //PORT : TAP to play game
+      onTouchStart: function(e){
+    	  
+    	  if (this.imagesLoaded)
+          {
+             this.start = true;
+          }
+          return true;
+      },
+      
+      //TODO : remove keuboard code
       onKeyDownHandler: function onKeyDownHandler(keyCode)
       {
          switch (keyCode)
@@ -813,6 +824,7 @@ if (typeof Asteroids == "undefined" || !Asteroids)
             
             case KEY.SPACE:
             {
+               consonle.log('SPACE');
                this.input.fireA = true;
                return true;
                break;

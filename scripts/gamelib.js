@@ -156,6 +156,25 @@ if (typeof Game == "undefined" || !Game)
             }
          }
       };
+      
+      //PORT : touch events
+      x$(document).on("touchstart", function(e){
+    	  
+    	  if (me.sceneIndex !== -1)
+          {
+             if (me.scenes[me.sceneIndex].onTouchStart(e))
+             {
+                // if the key is handled, prevent any further events
+                if (e)
+                {
+                   event.preventDefault();
+                   event.stopPropagation();
+                }
+             }
+          }
+    	  
+      });//end touchstart
+      
    };
    
    Game.Main.prototype =
