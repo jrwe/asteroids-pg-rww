@@ -228,8 +228,10 @@ if (typeof Asteroids == "undefined" || !Asteroids)
          // setup canvas for a render pass and apply background
          if (BITMAPS)
          {
+        	 //console.log('onRenderGame');
             // draw a scrolling background image
             ctx.drawImage(g_backgroundImg, this.backgroundX++, 0, GameHandler.width, GameHandler.height, 0, 0, GameHandler.width, GameHandler.height);
+            //console.log(this.backgroundX++, 0, GameHandler.width, GameHandler.height, 0, 0, GameHandler.width, GameHandler.height);
             if (this.backgroundX == (g_backgroundImg.width / 2))
             {
                this.backgroundX = 0;
@@ -824,7 +826,7 @@ if (typeof Asteroids == "undefined" || !Asteroids)
        */
       onTouchStart: function onTouchStart(e){
     	  var x = e.screenX, y=e.screenY;
-    	  console.log(e.screenX,e.screenY);
+    	  //console.log(e.screenX,e.screenY);
     	  if(x>=joystickUpPos.minX && x<=joystickUpPos.maxX && y>=joystickUpPos.minY && y<=joystickUpPos.maxY){
     		  //console.log('UP');
     		  this.input.thrust = true;
