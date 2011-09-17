@@ -63,8 +63,11 @@ var GameHandler =
    init: function()
    {
       this.canvas = document.getElementById('canvas');
-      this.width = this.canvas.height;
-      this.height = this.canvas.width;
+      
+      //this.width = this.canvas.height;
+      //this.height = this.canvas.width;
+      this.width = this.canvas.width;
+      this.height = this.canvas.height;
    },
    
    /**
@@ -159,11 +162,11 @@ if (typeof Game == "undefined" || !Game)
       
       //PORT : touch events
       //x$(document).on("touchstart", function(e){
-      x$(document).on("touchstart", function(e){
+      x$(document).on("mousedown", function(e){
     	  //console.log(e.touches[0]);
     	  if (me.sceneIndex !== -1)
           {
-             if (me.scenes[me.sceneIndex].onTouchStart(e.touches[0]))//e
+             if (me.scenes[me.sceneIndex].onTouchStart(e))//e e.touches[0]
              {
                 // if the key is handled, prevent any further events
                 if (e)
@@ -177,11 +180,11 @@ if (typeof Game == "undefined" || !Game)
       });//end touchstart
       
       //x$(document).on("touchend", function(e){
-      x$(document).on("touchend", function(e){
+      x$(document).on("mouseup", function(e){
     	  
     	  if (me.sceneIndex !== -1)
           {
-             if (me.scenes[me.sceneIndex].onTouchEnd(e.touches[0]))//e
+             if (me.scenes[me.sceneIndex].onTouchEnd(e))//e e.touches[0]
              {
                 // if the key is handled, prevent any further events
                 if (e)

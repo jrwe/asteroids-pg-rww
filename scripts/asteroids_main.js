@@ -71,11 +71,48 @@ var shieldButtonX = 220;
 var shieldButtonY = 280;
 var shieldButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
 
+//pause button
+var g_pauseButtonImg = new Image();
+var pauseButtonX = 220;
+var pauseButtonY = 280;
+var pauseButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
+
+//pause button
+var g_opencheatButtonImg = new Image();
+var opencheatButtonX = 220;
+var opencheatButtonY = 280;
+var opencheatButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
+
 /**
  * Global window onload handler
  */
 function onloadHandler()
 {
+	
+	var w =  canvas.width, h = canvas.height;
+	joystickY = h - 125;
+	joystickUpPos = {minX:30, minY: joystickY, maxX:90, maxY:joystickY + 61};
+	joystickLeftPos = {minX:0, minY: joystickY+30, maxX:60, maxY:joystickY+91};
+	joystickRightPos = {minX:60, minY: joystickY, maxX:120, maxY:joystickY + 61};
+	joystickDownPos = {minX:30, minY: joystickY + 62, maxX:90, maxY:joystickY + 122};
+	
+	fireButtonY = h - 40;
+	fireButtonPos = {minX:130, minY: fireButtonY, maxX:170, maxY:fireButtonY + 37};
+	
+	bombButtonY = h - 40;
+	bombButtonPos = {minX:175, minY: bombButtonY, maxX:215, maxY:bombButtonY + 37};
+	
+	shieldButtonY = h - 40;
+	shieldButtonPos = {minX:220, minY: shieldButtonY, maxX:260, maxY:shieldButtonY + 37};
+	
+	pauseButtonX = w - 90;
+	pauseButtonY = h - 40;
+	pauseButtonPos = {minX:pauseButtonX, minY: pauseButtonY, maxX:pauseButtonX + 36, maxY: pauseButtonY + 37};
+	
+	opencheatButtonX = w - 45;
+	opencheatButtonY = h - 40;
+	opencheatButtonPos = {minX:opencheatButtonX, minY: opencheatButtonY, maxX:opencheatButtonX+36, maxY:opencheatButtonY+37};
+	
    // load our global bits
    /*if (soundManager)
    {
@@ -136,6 +173,8 @@ if (typeof Asteroids == "undefined" || !Asteroids)
       loader.addImage(g_fireButtonImg, 'images/fire.png');
       loader.addImage(g_bombButtonImg, 'images/bomb.png');
       loader.addImage(g_shieldButtonImg, 'images/shield_button.png');
+      loader.addImage(g_pauseButtonImg, 'images/pause.png');
+      loader.addImage(g_opencheatButtonImg, 'images/cheat.png');
       
       // the attactor scene is displayed first and responsible for allowing the
       // player to start the game once all images have been loaded
@@ -231,6 +270,7 @@ if (typeof Asteroids == "undefined" || !Asteroids)
         	 //console.log('onRenderGame');
             // draw a scrolling background image
             ctx.drawImage(g_backgroundImg, this.backgroundX++, 0, GameHandler.width, GameHandler.height, 0, 0, GameHandler.width, GameHandler.height);
+        	 //ctx.drawImage(g_backgroundImg, this.backgroundX++, 0, 640, 480, 0, 0, 640, 480);
             //console.log(this.backgroundX++, 0, GameHandler.width, GameHandler.height, 0, 0, GameHandler.width, GameHandler.height);
             if (this.backgroundX == (g_backgroundImg.width / 2))
             {
@@ -826,7 +866,7 @@ if (typeof Asteroids == "undefined" || !Asteroids)
        */
       onTouchStart: function onTouchStart(e){
     	  var x = e.clientX, y=e.clientY;
-    	  //console.log(e,x,y,joystickUpPos);
+    	  //console.log(e,x,y,pauseButtonPos);
     	  if(x>=joystickUpPos.minX && x<=joystickUpPos.maxX && y>=joystickUpPos.minY && y<=joystickUpPos.maxY){
     		  //console.log('UP');
     		  this.input.thrust = true;
@@ -860,6 +900,10 @@ if (typeof Asteroids == "undefined" || !Asteroids)
     	  }
     	  else if(x>=shieldButtonPos.minX  && x<=shieldButtonPos.maxX && y>=shieldButtonPos.minY && y<=shieldButtonPos.maxY){    		  
     		  this.input.shield = true;
+              return true;
+    	  }
+    	  else if(x>=pauseButtonPos.minX  && x<=pauseButtonPos.maxX && y>=pauseButtonPos.minY && y<=pauseButtonPos.maxY){    		  
+    		  GameHandler.pause();
               return true;
     	  }
     	  
@@ -1546,6 +1590,8 @@ if (typeof Asteroids == "undefined" || !Asteroids)
                ctx.drawImage(g_fireButtonImg, fireButtonX, fireButtonY);
                ctx.drawImage(g_bombButtonImg, bombButtonX, bombButtonY);
                ctx.drawImage(g_shieldButtonImg, shieldButtonX, shieldButtonY);
+               ctx.drawImage(g_pauseButtonImg, pauseButtonX, pauseButtonY);
+               ctx.drawImage(g_opencheatButtonImg, opencheatButtonX, opencheatButtonY);
                
             }
             else

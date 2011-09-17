@@ -3,7 +3,16 @@
     <head>
       <title>Asteroids Game - HTML 5 Canvas API example and JavaScript demo</title>
       <meta name="viewport" content="width=device-width,maximum-scale=1.0, initial-scale=1.0, user-scalable=no"/>
-      <script src="http://192.168.1.2:8080/target/target-script-min.js#anonymous"></script>
+      
+      <style type="text/css">
+      	html, body {
+			  width:  99%;
+			  height: 99%;
+			  margin: 0px;
+			}
+      </style>
+      
+      <!-- <script src="http://192.168.1.2:8080/target/target-script-min.js#anonymous"></script> -->
       <script type="text/javascript" src="scripts/lib/xui-2.2.0.min.js"></script>
       <!-- <script type="text/javascript" src="scripts/soundmanager2-nodebug-jsmin.js"></script> -->
       <script type="text/javascript" src="scripts/mathlib.js"></script>
@@ -13,8 +22,14 @@
       <script type="text/javascript" src="scripts/asteroids_weapons.js"></script>
       <script type="text/javascript" src="scripts/asteroids_enemies.js"></script>
       <script type="text/javascript" src="scripts/asteroids_effects.js"></script>
-      <script type="text/javascript" src="scripts/asteroids_DEBUG.js"></script>            
-      <script>      	
+      <script type="text/javascript" src="scripts/asteroids_DEBUG.js"></script>
+   </head>
+   
+   <body style="background-color: #000000">
+      <canvas id="canvas"></canvas>      
+   </body>
+   
+  <script>      	
          /*soundManager.debugMode = false;
          soundManager.url = 'swf/';
          soundManager.flashVersion = 9;
@@ -22,11 +37,19 @@
            onloadHandler();
            // start mp3 background music?
          });*/
+         
+         var canvas = document.getElementById('canvas');         
+         //canvas.width  = window.innerWidth;
+         //canvas.height = window.innerHeight;
+         
+         x$('body').getStyle("height",function(h){
+        	 x$('#canvas').attr("height", h);
+        	});
+         
+         x$('body').getStyle("width",function(w){
+        	 x$('#canvas').attr("width", w);
+        	});
+         
          onloadHandler();
       </script>
-   </head>
-   
-   <body style="background-color: #000000">
-      <canvas id="canvas" width="320" height="320" style="border: 1px solid #aaaaaa;"></canvas>      
-   </body>
 </html>
