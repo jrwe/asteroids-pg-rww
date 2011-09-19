@@ -77,11 +77,16 @@ var pauseButtonX = 220;
 var pauseButtonY = 280;
 var pauseButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
 
-//pause button
+//cheat button
 var g_opencheatButtonImg = new Image();
 var opencheatButtonX = 220;
 var opencheatButtonY = 280;
 var opencheatButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
+
+
+//logo
+var g_logoImg = new Image();
+
 
 //PORT : recalc buttons pos based on canvas size
 function reCalculateSize(){
@@ -180,6 +185,8 @@ if (typeof Asteroids == "undefined" || !Asteroids)
       loader.addImage(g_shieldButtonImg, 'images/shield_button.png');
       loader.addImage(g_pauseButtonImg, 'images/pause.png');
       loader.addImage(g_opencheatButtonImg, 'images/cheat.png');
+      loader.addImage(g_logoImg, 'images/rewire-logo.png');
+      
       
       // the attactor scene is displayed first and responsible for allowing the
       // player to start the game once all images have been loaded
@@ -396,7 +403,13 @@ if (typeof Asteroids == "undefined" || !Asteroids)
          if (this.imagesLoaded)
          {
             var colour = "rgba(255,255,255," + this.fadeRGB + ")";
-            f(ctx, "TAP to continue", "10pt Courier New", GameHandler.width/2 - 70, GameHandler.height/2, colour);            
+            f(ctx, "TAP to continue", "10pt Courier New", GameHandler.width/2 - 70, GameHandler.height/2, colour);
+            
+            f(ctx, "Original game by Kevin Roast", "15pt Courier New", GameHandler.width/2 - 170, GameHandler.height-50, "white");
+            f(ctx, "Powered for Touch by", "15pt Courier New", GameHandler.width/2 - 190, GameHandler.height-20, "white");
+            
+            ctx.drawImage(g_logoImg , GameHandler.width/2 + 35, GameHandler.height-69);
+            
          }
          else
          {
