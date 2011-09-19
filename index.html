@@ -38,18 +38,39 @@
            // start mp3 background music?
          });*/
          
-         var canvas = document.getElementById('canvas');         
-         //canvas.width  = window.innerWidth;
-         //canvas.height = window.innerHeight;
+ 		var resizeFlag = false;
+        var canvas = document.getElementById('canvas'); 
+ 		
+ 		window.addEventListener("resize", function(e){//capture window resize event			
+ 			if(resizeFlag !== false)
+ 			    clearTimeout(resizeFlag);
+ 			resizeFlag = setTimeout(doResize, 100);
+ 		});
+        
+ 		var setCanvasSize = function(){
+ 	         x$('body').getStyle("height",function(h){
+ 	        	 x$('#canvas').attr("height", h);
+ 	        	});
+ 	         
+ 	         x$('body').getStyle("width",function(w){
+ 	        	 x$('#canvas').attr("width", w);
+ 	        	});
+ 		};
+ 		
+ 		var doResize = function(){
+ 			//GameHandler.pause();
+ 			setCanvasSize(); 	         
+ 	        reCalculateSize();
+ 	        
+ 	     	GameHandler.width = canvas.width;
+ 	     	GameHandler.height = canvas.height;
+ 	     	
+ 	     	if(GameHandler.paused)
+ 	     		GameHandler.pause();
+ 	     	//GameHandler.pause();
+ 		};
          
-         x$('body').getStyle("height",function(h){
-        	 x$('#canvas').attr("height", h);
-        	});
-         
-         x$('body').getStyle("width",function(w){
-        	 x$('#canvas').attr("width", w);
-        	});
-         
-         onloadHandler();
+ 		setCanvasSize();
+ 		onloadHandler();
       </script>
 </html>

@@ -83,12 +83,8 @@ var opencheatButtonX = 220;
 var opencheatButtonY = 280;
 var opencheatButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
 
-/**
- * Global window onload handler
- */
-function onloadHandler()
-{
-	
+//PORT : recalc buttons pos based on canvas size
+function reCalculateSize(){
 	var w =  canvas.width, h = canvas.height;
 	joystickY = h - 125;
 	joystickUpPos = {minX:30, minY: joystickY, maxX:90, maxY:joystickY + 61};
@@ -112,6 +108,15 @@ function onloadHandler()
 	opencheatButtonX = w - 45;
 	opencheatButtonY = h - 40;
 	opencheatButtonPos = {minX:opencheatButtonX, minY: opencheatButtonY, maxX:opencheatButtonX+36, maxY:opencheatButtonY+37};
+}
+
+
+/**
+ * Global window onload handler
+ */
+function onloadHandler()
+{
+	reCalculateSize();
 	
    // load our global bits
    /*if (soundManager)
