@@ -79,10 +79,19 @@ var pauseButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
 
 //cheat button
 var g_opencheatButtonImg = new Image();
+var g_closecheatButtonImg = new Image();
 var opencheatButtonX = 220;
 var opencheatButtonY = 280;
 var opencheatButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
+var cheatMenuOpened = false;
 
+var g_cheatMenuImg = new Image();
+var cheatMenuX = 220;
+var cheatMenuY = 280;
+var cheatLPos = {minX:220, minY: 280, maxX:260, maxY:320};
+var cheatRPos = {minX:220, minY: 280, maxX:260, maxY:320};
+var cheatAPos = {minX:220, minY: 280, maxX:260, maxY:320};
+var cheatEPos = {minX:220, minY: 280, maxX:260, maxY:320};
 
 //logo
 var g_logoImg = new Image();
@@ -113,6 +122,14 @@ function reCalculateSize(){
 	opencheatButtonX = w - 45;
 	opencheatButtonY = h - 40;
 	opencheatButtonPos = {minX:opencheatButtonX, minY: opencheatButtonY, maxX:opencheatButtonX+36, maxY:opencheatButtonY+37};
+	
+	cheatMenuX = w - 45;
+	cheatMenuY = h - 220;
+	
+	cheatLPos = {minX:cheatMenuX, minY: cheatMenuY, maxX:cheatMenuX+36, maxY:cheatMenuY+40};
+	cheatRPos = {minX:cheatMenuX, minY: cheatMenuY+41, maxX:cheatMenuX+36, maxY:cheatMenuY+82};
+	cheatAPos = {minX:cheatMenuX, minY: cheatMenuY+83, maxX:cheatMenuX+36, maxY:cheatMenuY+123};
+	cheatEPos = {minX:cheatMenuX, minY: cheatMenuY+124, maxX:cheatMenuX+36, maxY:cheatMenuY+164};
 }
 
 
@@ -185,6 +202,8 @@ if (typeof Asteroids == "undefined" || !Asteroids)
       loader.addImage(g_shieldButtonImg, 'images/shield_button.png');
       loader.addImage(g_pauseButtonImg, 'images/pause.png');
       loader.addImage(g_opencheatButtonImg, 'images/cheat.png');
+      loader.addImage(g_closecheatButtonImg, 'images/close-cheat.png');
+      loader.addImage(g_cheatMenuImg, 'images/cheats.png');
       loader.addImage(g_logoImg, 'images/rewire-logo.png');
       
       
@@ -608,6 +627,10 @@ if (typeof Asteroids == "undefined" || !Asteroids)
          {
             interval.complete = true;
          }
+      },
+      //PORT
+      onTouchStart: function onTouchStart(e){
+    	  
       }
    });
 })();
@@ -922,6 +945,28 @@ if (typeof Asteroids == "undefined" || !Asteroids)
     	  }
     	  else if(x>=pauseButtonPos.minX  && x<=pauseButtonPos.maxX && y>=pauseButtonPos.minY && y<=pauseButtonPos.maxY){    		  
     		  GameHandler.pause();
+              return true;
+    	  }
+    	  else if(x>=opencheatButtonPos.minX  && x<=opencheatButtonPos.maxX && y>=opencheatButtonPos.minY && y<=opencheatButtonPos.maxY){    		  
+    		  //open cheat menu
+    		  cheatMenuOpened = !cheatMenuOpened;
+              return true;
+    	  }
+    	  
+    	  else if(cheatMenuOpened && x>= cheatLPos.minX  && x<=cheatLPos.maxX && y>=cheatLPos.minY && y<=cheatLPos.maxY){
+              this.skipLevel = true;
+              return true;
+    	  }
+    	  else if(cheatMenuOpened && x>= cheatRPos.minX  && x<=cheatRPos.maxX && y>=cheatRPos.minY && y<=cheatRPos.maxY){
+    		  BITMAPS = !BITMAPS;
+              return true;
+    	  }
+    	  else if(cheatMenuOpened && x>= cheatAPos.minX  && x<=cheatAPos.maxX && y>=cheatAPos.minY && y<=cheatAPos.maxY){
+    		  this.enemies.push(this.generateAsteroid(1.0));
+              return true;
+    	  }
+    	  else if(cheatMenuOpened && x>= cheatEPos.minX  && x<=cheatEPos.maxX && y>=cheatEPos.minY && y<=cheatEPos.maxY){
+    		  this.enemies.push(new Asteroids.EnemyShip(this, randomInt(0, 1)));
               return true;
     	  }
     	  
@@ -1609,7 +1654,13 @@ if (typeof Asteroids == "undefined" || !Asteroids)
                ctx.drawImage(g_bombButtonImg, bombButtonX, bombButtonY);
                ctx.drawImage(g_shieldButtonImg, shieldButtonX, shieldButtonY);
                ctx.drawImage(g_pauseButtonImg, pauseButtonX, pauseButtonY);
-               ctx.drawImage(g_opencheatButtonImg, opencheatButtonX, opencheatButtonY);
+               
+               if(cheatMenuOpened){
+            	   ctx.drawImage(g_closecheatButtonImg, opencheatButtonX, opencheatButtonY);
+            	   ctx.drawImage(g_cheatMenuImg, cheatMenuX, cheatMenuY);
+               }
+               else
+            	   ctx.drawImage(g_opencheatButtonImg, opencheatButtonX, opencheatButtonY);
                
             }
             else
