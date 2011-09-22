@@ -912,84 +912,99 @@ if (typeof Asteroids == "undefined" || !Asteroids)
       /**
        * Scene onTouchStart method
        */
-      onTouchStart: function onTouchStart(e){
-    	  var x = e.clientX, y=e.clientY;
+      onTouchStart: function onTouchStart(touches){
     	  
-    	  if(x>= joystickPos.minX && x<=joystickPos.maxX && y>=joystickPos.minY && y<=joystickPos.maxY){
-    		  var angle = Math.atan2(joystickCenter.y - y, joystickCenter.x - x)/RAD;
-        	  this.player.heading = Math.floor((angle-90)/8) * 8;
-        	  this.player.vector.x = (x - joystickCenter.x)*this.player.MAX_PLAYER_VELOCITY/(joystickRadius*1.41);
-        	  this.player.vector.y = (y - joystickCenter.y)*this.player.MAX_PLAYER_VELOCITY/(joystickRadius*1.41);
-    	  }    	  
+    	  this.input.left = false;
+    	  this.input.right = false;
+    	  this.input.thrust = false;
+    	  this.input.shield = false;
+    	  this.input.fireA = false;
+    	  this.input.fireB = false;
     	  
-    	  /*if(x>=joystickUpPos.minX && x<=joystickUpPos.maxX && y>=joystickUpPos.minY && y<=joystickUpPos.maxY){
-    		  //console.log('UP');
-    		  this.input.thrust = true;
-              return true;
-    	  }
-    	  else if(x>=joystickLeftPos.minX && x<=joystickLeftPos.maxX && y>=joystickLeftPos.minY && y<=joystickLeftPos.maxY){
-    		  //console.log('Left');
-    		  this.input.left = true;
-              return true;
-    	  }
-    	  else if(x>=joystickRightPos.minX && x<=joystickRightPos.maxX && y>=joystickRightPos.minY && y<=joystickRightPos.maxY){
-    		  //console.log('Right');
-    		  this.input.right = true;
-              return true;
-    	  }*/
-    	  else if(x>=joystickDownPos.minX && x<=joystickDownPos.maxX && y>=joystickDownPos.minY && y<=joystickDownPos.maxY){
-    		  //console.log('Down');
-    		  //not use for now
-    		  //this.input.shield = true;
-              //return true;
+    	  if(touches.length === 0)
+    		  return true;
+    	  
+    	  for(var i=0, l=touches.length; i<l; i++){
     		  
-    	  }
-    	  else if(x>=fireButtonPos.minX  && x<=fireButtonPos.maxX && y>=fireButtonPos.minY && y<=fireButtonPos.maxY){
-    		  //console.log('Right');
-    		  this.input.fireA = true;
-              return true;
-    	  }
-    	  else if(x>=bombButtonPos.minX  && x<=bombButtonPos.maxX && y>=bombButtonPos.minY && y<=bombButtonPos.maxY){    		  
-    		  this.input.fireB = true;
-              return true;
-    	  }
-    	  else if(x>=shieldButtonPos.minX  && x<=shieldButtonPos.maxX && y>=shieldButtonPos.minY && y<=shieldButtonPos.maxY){    		  
-    		  this.input.shield = true;
-              return true;
-    	  }
-    	  else if(x>=pauseButtonPos.minX  && x<=pauseButtonPos.maxX && y>=pauseButtonPos.minY && y<=pauseButtonPos.maxY){    		  
-    		  GameHandler.pause();
-              return true;
-    	  }
-    	  else if(x>=opencheatButtonPos.minX  && x<=opencheatButtonPos.maxX && y>=opencheatButtonPos.minY && y<=opencheatButtonPos.maxY){    		  
-    		  //open cheat menu
-    		  cheatMenuOpened = !cheatMenuOpened;
-              return true;
-    	  }
+    		  var e = touches[i];
     	  
-    	  else if(cheatMenuOpened && x>= cheatLPos.minX  && x<=cheatLPos.maxX && y>=cheatLPos.minY && y<=cheatLPos.maxY){
-              this.skipLevel = true;
-              return true;
-    	  }
-    	  else if(cheatMenuOpened && x>= cheatRPos.minX  && x<=cheatRPos.maxX && y>=cheatRPos.minY && y<=cheatRPos.maxY){
-    		  BITMAPS = !BITMAPS;
-              return true;
-    	  }
-    	  else if(cheatMenuOpened && x>= cheatAPos.minX  && x<=cheatAPos.maxX && y>=cheatAPos.minY && y<=cheatAPos.maxY){
-    		  this.enemies.push(this.generateAsteroid(1.0));
-              return true;
-    	  }
-    	  else if(cheatMenuOpened && x>= cheatEPos.minX  && x<=cheatEPos.maxX && y>=cheatEPos.minY && y<=cheatEPos.maxY){
-    		  this.enemies.push(new Asteroids.EnemyShip(this, randomInt(0, 1)));
-              return true;
+	    	  var x = e.clientX, y=e.clientY;
+	    	  
+	    	  if(x>= joystickPos.minX && x<=joystickPos.maxX && y>=joystickPos.minY && y<=joystickPos.maxY){
+	    		  var angle = Math.atan2(joystickCenter.y - y, joystickCenter.x - x)/RAD;
+	        	  this.player.heading = Math.floor((angle-90)/8) * 8;
+	        	  this.player.vector.x = (x - joystickCenter.x)*this.player.MAX_PLAYER_VELOCITY/(joystickRadius*1.41);
+	        	  this.player.vector.y = (y - joystickCenter.y)*this.player.MAX_PLAYER_VELOCITY/(joystickRadius*1.41);
+	    	  }    	  
+	    	  
+	    	  /*if(x>=joystickUpPos.minX && x<=joystickUpPos.maxX && y>=joystickUpPos.minY && y<=joystickUpPos.maxY){
+	    		  //console.log('UP');
+	    		  this.input.thrust = true;
+	              return true;
+	    	  }
+	    	  else if(x>=joystickLeftPos.minX && x<=joystickLeftPos.maxX && y>=joystickLeftPos.minY && y<=joystickLeftPos.maxY){
+	    		  //console.log('Left');
+	    		  this.input.left = true;
+	              return true;
+	    	  }
+	    	  else if(x>=joystickRightPos.minX && x<=joystickRightPos.maxX && y>=joystickRightPos.minY && y<=joystickRightPos.maxY){
+	    		  //console.log('Right');
+	    		  this.input.right = true;
+	              return true;
+	    	  }*/
+	    	  else if(x>=joystickDownPos.minX && x<=joystickDownPos.maxX && y>=joystickDownPos.minY && y<=joystickDownPos.maxY){
+	    		  //console.log('Down');
+	    		  //not use for now
+	    		  //this.input.shield = true;
+	              //return true;
+	    		  
+	    	  }
+	    	  else if(x>=fireButtonPos.minX  && x<=fireButtonPos.maxX && y>=fireButtonPos.minY && y<=fireButtonPos.maxY){
+	    		  //console.log('Right');
+	    		  this.input.fireA = true;
+	              return true;
+	    	  }
+	    	  else if(x>=bombButtonPos.minX  && x<=bombButtonPos.maxX && y>=bombButtonPos.minY && y<=bombButtonPos.maxY){    		  
+	    		  this.input.fireB = true;
+	              return true;
+	    	  }
+	    	  else if(x>=shieldButtonPos.minX  && x<=shieldButtonPos.maxX && y>=shieldButtonPos.minY && y<=shieldButtonPos.maxY){    		  
+	    		  this.input.shield = true;
+	              return true;
+	    	  }
+	    	  else if(x>=pauseButtonPos.minX  && x<=pauseButtonPos.maxX && y>=pauseButtonPos.minY && y<=pauseButtonPos.maxY){    		  
+	    		  GameHandler.pause();
+	              return true;
+	    	  }
+	    	  else if(x>=opencheatButtonPos.minX  && x<=opencheatButtonPos.maxX && y>=opencheatButtonPos.minY && y<=opencheatButtonPos.maxY){    		  
+	    		  //open cheat menu
+	    		  cheatMenuOpened = !cheatMenuOpened;
+	              return true;
+	    	  }
+	    	  
+	    	  else if(cheatMenuOpened && x>= cheatLPos.minX  && x<=cheatLPos.maxX && y>=cheatLPos.minY && y<=cheatLPos.maxY){
+	              this.skipLevel = true;
+	              return true;
+	    	  }
+	    	  else if(cheatMenuOpened && x>= cheatRPos.minX  && x<=cheatRPos.maxX && y>=cheatRPos.minY && y<=cheatRPos.maxY){
+	    		  BITMAPS = !BITMAPS;
+	              return true;
+	    	  }
+	    	  else if(cheatMenuOpened && x>= cheatAPos.minX  && x<=cheatAPos.maxX && y>=cheatAPos.minY && y<=cheatAPos.maxY){
+	    		  this.enemies.push(this.generateAsteroid(1.0));
+	              return true;
+	    	  }
+	    	  else if(cheatMenuOpened && x>= cheatEPos.minX  && x<=cheatEPos.maxX && y>=cheatEPos.minY && y<=cheatEPos.maxY){
+	    		  this.enemies.push(new Asteroids.EnemyShip(this, randomInt(0, 1)));
+	              return true;
+	    	  }
     	  }
     	  
       },
       /**
        * Scene onTouchEnd method
        */
-      onTouchEnd: function onTouchEnd(e){
-    	  //console.log('onTouchEnd');
+      onTouchEnd: function onTouchEnd(e){    	  
     	  this.input.left = false;
     	  this.input.right = false;
     	  this.input.thrust = false;
