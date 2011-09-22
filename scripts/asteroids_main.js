@@ -106,6 +106,8 @@ function reCalculateSize(){
 	joystickRightPos = {minX:60, minY: joystickY, maxX:120, maxY:joystickY + 61};
 	joystickDownPos = {minX:30, minY: joystickY + 62, maxX:90, maxY:joystickY + 122};
 	
+	joystickCenter = {x: joystickX+61, y: joystickY+61};
+	
 	fireButtonY = h - 40;
 	fireButtonPos = {minX:130, minY: fireButtonY, maxX:170, maxY:fireButtonY + 37};
 	
@@ -907,7 +909,14 @@ if (typeof Asteroids == "undefined" || !Asteroids)
        */
       onTouchStart: function onTouchStart(e){
     	  var x = e.clientX, y=e.clientY;
-    	  //console.log(e,x,y,pauseButtonPos);
+    	  
+    	  var angle = Math.atan2(joystickCenter.y - y, joystickCenter.x - x)/RAD;
+    	  console.log(angle);
+    	  this.player.heading = Math.floor((angle-90)/8) * 8;
+    	  this.player.vector.x = (x - joystickCenter.x)*10/61;
+    	  this.player.vector.y = (y - joystickCenter.y)*10/61;
+    	  return;
+    	  
     	  if(x>=joystickUpPos.minX && x<=joystickUpPos.maxX && y>=joystickUpPos.minY && y<=joystickUpPos.maxY){
     		  //console.log('UP');
     		  this.input.thrust = true;
