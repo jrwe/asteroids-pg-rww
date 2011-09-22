@@ -47,6 +47,8 @@ var g_enemyshipImg = new Image();
 var g_joystickImg = new Image();
 var joystickX = 0;
 var joystickY = 200;
+var joystickRadius = 61;
+var joystickPos = {minX:30, minY: 200, maxX:90, maxY:260};
 var joystickUpPos = {minX:30, minY: 200, maxX:90, maxY:260};
 var joystickLeftPos = {minX:0, minY: 230, maxX:60, maxY:290};
 var joystickRightPos = {minX:60, minY: 230, maxX:120, maxY:290};
@@ -101,12 +103,15 @@ var g_logoImg = new Image();
 function reCalculateSize(){
 	var w =  canvas.width, h = canvas.height;
 	joystickY = h - 125;
+	
 	joystickUpPos = {minX:30, minY: joystickY, maxX:90, maxY:joystickY + 61};
 	joystickLeftPos = {minX:0, minY: joystickY+30, maxX:60, maxY:joystickY+91};
 	joystickRightPos = {minX:60, minY: joystickY, maxX:120, maxY:joystickY + 61};
 	joystickDownPos = {minX:30, minY: joystickY + 62, maxX:90, maxY:joystickY + 122};
 	
 	joystickCenter = {x: joystickX+61, y: joystickY+61};
+	
+	joystickPos = {minX:joystickX, minY: joystickY, maxX:joystickX+122, maxY:joystickY+122};
 	
 	fireButtonY = h - 40;
 	fireButtonPos = {minX:130, minY: fireButtonY, maxX:170, maxY:fireButtonY + 37};
@@ -910,14 +915,14 @@ if (typeof Asteroids == "undefined" || !Asteroids)
       onTouchStart: function onTouchStart(e){
     	  var x = e.clientX, y=e.clientY;
     	  
-    	  var angle = Math.atan2(joystickCenter.y - y, joystickCenter.x - x)/RAD;
-    	  console.log(angle);
-    	  this.player.heading = Math.floor((angle-90)/8) * 8;
-    	  this.player.vector.x = (x - joystickCenter.x)*10/61;
-    	  this.player.vector.y = (y - joystickCenter.y)*10/61;
-    	  return;
+    	  if(x>= joystickPos.minX && x<=joystickPos.maxX && y>=joystickPos.minY && y<=joystickPos.maxY){
+    		  var angle = Math.atan2(joystickCenter.y - y, joystickCenter.x - x)/RAD;
+        	  this.player.heading = Math.floor((angle-90)/8) * 8;
+        	  this.player.vector.x = (x - joystickCenter.x)*this.player.MAX_PLAYER_VELOCITY/(joystickRadius*1.41);
+        	  this.player.vector.y = (y - joystickCenter.y)*this.player.MAX_PLAYER_VELOCITY/(joystickRadius*1.41);
+    	  }    	  
     	  
-    	  if(x>=joystickUpPos.minX && x<=joystickUpPos.maxX && y>=joystickUpPos.minY && y<=joystickUpPos.maxY){
+    	  /*if(x>=joystickUpPos.minX && x<=joystickUpPos.maxX && y>=joystickUpPos.minY && y<=joystickUpPos.maxY){
     		  //console.log('UP');
     		  this.input.thrust = true;
               return true;
@@ -931,7 +936,7 @@ if (typeof Asteroids == "undefined" || !Asteroids)
     		  //console.log('Right');
     		  this.input.right = true;
               return true;
-    	  }
+    	  }*/
     	  else if(x>=joystickDownPos.minX && x<=joystickDownPos.maxX && y>=joystickDownPos.minY && y<=joystickDownPos.maxY){
     		  //console.log('Down');
     		  //not use for now
