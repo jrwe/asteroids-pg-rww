@@ -1704,6 +1704,21 @@ if (typeof Asteroids == "undefined" || !Asteroids)
                ctx.closePath();
                ctx.stroke();
                ctx.restore();
+               
+               //PORT: draw images
+               ctx.drawImage(g_joystickImg, joystickX, joystickY);
+               ctx.drawImage(g_fireButtonImg, fireButtonX, fireButtonY);
+               ctx.drawImage(g_bombButtonImg, bombButtonX, bombButtonY);
+               ctx.drawImage(g_shieldButtonImg, shieldButtonX, shieldButtonY);
+               ctx.drawImage(g_pauseButtonImg, pauseButtonX, pauseButtonY);
+               
+               if(cheatMenuOpened){
+            	   ctx.drawImage(g_closecheatButtonImg, opencheatButtonX, opencheatButtonY);
+            	   ctx.drawImage(g_cheatMenuImg, cheatMenuX, cheatMenuY);
+               }
+               else
+            	   ctx.drawImage(g_opencheatButtonImg, opencheatButtonX, opencheatButtonY);
+               
             }
          }
          
