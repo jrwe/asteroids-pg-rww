@@ -47,7 +47,7 @@ var g_enemyshipImg = new Image();
 var g_joystickImg = new Image();
 var joystickX = 0;
 var joystickY = 200;
-var joystickRadius = 61;
+var joystickRadius = 48;
 var joystickPos = {minX:30, minY: 200, maxX:90, maxY:260};
 var joystickUpPos = {minX:30, minY: 200, maxX:90, maxY:260};
 var joystickLeftPos = {minX:0, minY: 230, maxX:60, maxY:290};
@@ -69,13 +69,13 @@ var bombButtonPos = {minX:175, minY: 280, maxX:215, maxY:320};
 
 //shield button
 var g_shieldButtonImg = new Image();
-var shieldButtonX = 220;
+var shieldButtonX = 120;
 var shieldButtonY = 280;
 var shieldButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
 
 //pause button
 var g_pauseButtonImg = new Image();
-var pauseButtonX = 220;
+var pauseButtonX = 180;
 var pauseButtonY = 280;
 var pauseButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
 
@@ -102,33 +102,34 @@ var g_logoImg = new Image();
 //PORT : recalc buttons pos based on canvas size
 function reCalculateSize(){
 	var w =  canvas.width, h = canvas.height;
-	joystickY = h - 125;
+	joystickY = h - 100;
 	
-	joystickUpPos = {minX:30, minY: joystickY, maxX:90, maxY:joystickY + 61};
-	joystickLeftPos = {minX:0, minY: joystickY+30, maxX:60, maxY:joystickY+91};
-	joystickRightPos = {minX:60, minY: joystickY, maxX:120, maxY:joystickY + 61};
-	joystickDownPos = {minX:30, minY: joystickY + 62, maxX:90, maxY:joystickY + 122};
+	joystickUpPos = {minX:24, minY: joystickY, maxX:72, maxY:joystickY + 48};
+	joystickLeftPos = {minX:0, minY: joystickY+24, maxX:48, maxY:joystickY+72};
+	joystickRightPos = {minX:48, minY: joystickY, maxX:96, maxY:joystickY + 72};
+	joystickDownPos = {minX:24, minY: joystickY + 48, maxX:72, maxY:joystickY + 96};
 	
-	joystickCenter = {x: joystickX+61, y: joystickY+61};
+	joystickCenter = {x: joystickX+48, y: joystickY+48};
 	
-	joystickPos = {minX:joystickX, minY: joystickY, maxX:joystickX+122, maxY:joystickY+122};
+	joystickPos = {minX:joystickX, minY: joystickY, maxX:joystickX+96, maxY:joystickY+96};
 	
+	fireButtonX = w - 155;
 	fireButtonY = h - 40;
-	fireButtonPos = {minX:130, minY: fireButtonY, maxX:170, maxY:fireButtonY + 37};
+	fireButtonPos = {minX:fireButtonX, minY: fireButtonY, maxX:fireButtonX+40, maxY:fireButtonY + 40};
 	
+	bombButtonX = w - 95
 	bombButtonY = h - 40;
-	bombButtonPos = {minX:175, minY: bombButtonY, maxX:215, maxY:bombButtonY + 37};
+	bombButtonPos = {minX:bombButtonX, minY: bombButtonY, maxX:bombButtonX+40, maxY:bombButtonY + 40};
 	
 	shieldButtonY = h - 40;
-	shieldButtonPos = {minX:220, minY: shieldButtonY, maxX:260, maxY:shieldButtonY + 37};
-	
-	pauseButtonX = w - 90;
+	shieldButtonPos = {minX:120, minY: shieldButtonY, maxX:160, maxY:shieldButtonY + 40};
+		
 	pauseButtonY = h - 40;
-	pauseButtonPos = {minX:pauseButtonX, minY: pauseButtonY, maxX:pauseButtonX + 36, maxY: pauseButtonY + 37};
+	pauseButtonPos = {minX:pauseButtonX, minY: pauseButtonY, maxX:pauseButtonX + 40, maxY: pauseButtonY + 40};
 	
 	opencheatButtonX = w - 45;
 	opencheatButtonY = h - 40;
-	opencheatButtonPos = {minX:opencheatButtonX, minY: opencheatButtonY, maxX:opencheatButtonX+36, maxY:opencheatButtonY+37};
+	opencheatButtonPos = {minX:opencheatButtonX, minY: opencheatButtonY, maxX:opencheatButtonX+40, maxY:opencheatButtonY+40};
 	
 	cheatMenuX = w - 45;
 	cheatMenuY = h - 220;
@@ -136,7 +137,7 @@ function reCalculateSize(){
 	cheatLPos = {minX:cheatMenuX, minY: cheatMenuY, maxX:cheatMenuX+36, maxY:cheatMenuY+40};
 	cheatRPos = {minX:cheatMenuX, minY: cheatMenuY+41, maxX:cheatMenuX+36, maxY:cheatMenuY+82};
 	cheatAPos = {minX:cheatMenuX, minY: cheatMenuY+83, maxX:cheatMenuX+36, maxY:cheatMenuY+123};
-	cheatEPos = {minX:cheatMenuX, minY: cheatMenuY+124, maxX:cheatMenuX+36, maxY:cheatMenuY+164};
+	cheatEPos = {minX:cheatMenuX, minY: cheatMenuY+124, maxX:cheatMenuX+36, maxY:cheatMenuY+165};
 }
 
 
