@@ -162,10 +162,11 @@ if (typeof Game == "undefined" || !Game)
       
       //PORT : touch events
       //x$(document).on("touchstart", function(e){
-      x$(document).on("touchstart", function(e){    	  
+      x$(document).on("touchstart", function(e){
+    	  //console.log('touchstart');
     	  if (me.sceneIndex !== -1)
           {    		
-             if (me.scenes[me.sceneIndex].onTouchStart(e.touches))//e e.touches[0]
+             if (me.scenes[me.sceneIndex].onTouchStart(e.touches, true))//e e.touches[0]
              {
                 // if the key is handled, prevent any further events
                 if (e)
@@ -180,7 +181,7 @@ if (typeof Game == "undefined" || !Game)
       
       //x$(document).on("touchend", function(e){
       x$(document).on("touchend", function(e){
-    	  
+    	  //console.log('touchend');
     	  if (me.sceneIndex !== -1)
           {
              if (me.scenes[me.sceneIndex].onTouchEnd(e))//e e.touches[0]
@@ -196,9 +197,14 @@ if (typeof Game == "undefined" || !Game)
       });//end touchend
       
       x$(document).on("touchmove", function(e){
+    	  //console.log('touchmove');
+    	  e.preventDefault();
+    	  e.stopPropagation();
+    	  
     	  if (me.sceneIndex !== -1)
-          {    		
-             if (me.scenes[me.sceneIndex].onTouchStart(e.touches))//e e.touches[0]
+          {
+    		  //console.log(e);
+             if (me.scenes[me.sceneIndex].onTouchStart(e.touches, false))//e e.touches[0]
              {
                 // if the key is handled, prevent any further events
                 if (e)
