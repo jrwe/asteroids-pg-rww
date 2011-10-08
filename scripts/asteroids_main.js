@@ -75,7 +75,7 @@ var shieldButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
 
 //pause button
 var g_pauseButtonImg = new Image();
-var pauseButtonX = 180;
+var pauseButtonX = 170;
 var pauseButtonY = 280;
 var pauseButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
 
@@ -88,7 +88,7 @@ var opencheatButtonPos = {minX:220, minY: 280, maxX:260, maxY:320};
 var cheatMenuOpened = false;
 
 var g_cheatMenuImg = new Image();
-var cheatMenuX = 220;
+var cheatMenuX = 70;
 var cheatMenuY = 280;
 var cheatLPos = {minX:220, minY: 280, maxX:260, maxY:320};
 var cheatRPos = {minX:220, minY: 280, maxX:260, maxY:320};
@@ -113,7 +113,7 @@ function reCalculateSize(){
 	
 	joystickPos = {minX:joystickX, minY: joystickY, maxX:joystickX+96, maxY:joystickY+96};
 	
-	fireButtonX = w - 155;
+	fireButtonX = w - 45;
 	fireButtonY = h - 40;
 	fireButtonPos = {minX:fireButtonX, minY: fireButtonY, maxX:fireButtonX+40, maxY:fireButtonY + 40};
 	
@@ -128,11 +128,11 @@ function reCalculateSize(){
 	pauseButtonPos = {minX:pauseButtonX, minY: pauseButtonY, maxX:pauseButtonX + 40, maxY: pauseButtonY + 40};
 	
 	opencheatButtonX = w - 45;
-	opencheatButtonY = h - 40;
+	opencheatButtonY = 20;
 	opencheatButtonPos = {minX:opencheatButtonX, minY: opencheatButtonY, maxX:opencheatButtonX+40, maxY:opencheatButtonY+40};
 	
 	cheatMenuX = w - 45;
-	cheatMenuY = h - 220;
+	cheatMenuY = 70;
 	
 	cheatLPos = {minX:cheatMenuX, minY: cheatMenuY, maxX:cheatMenuX+36, maxY:cheatMenuY+40};
 	cheatRPos = {minX:cheatMenuX, minY: cheatMenuY+41, maxX:cheatMenuX+36, maxY:cheatMenuY+82};
@@ -1692,11 +1692,12 @@ if (typeof Asteroids == "undefined" || !Asteroids)
                ctx.drawImage(g_pauseButtonImg, pauseButtonX, pauseButtonY);
                
                if(cheatMenuOpened){
-            	   ctx.drawImage(g_closecheatButtonImg, opencheatButtonX, opencheatButtonY);
+            	   ctx.drawImage(g_opencheatButtonImg, opencheatButtonX, opencheatButtonY);
             	   ctx.drawImage(g_cheatMenuImg, cheatMenuX, cheatMenuY);
                }
-               else
-            	   ctx.drawImage(g_opencheatButtonImg, opencheatButtonX, opencheatButtonY);
+               else{
+            	   ctx.drawImage(g_closecheatButtonImg, opencheatButtonX, opencheatButtonY);
+               }
                
             }
             else
