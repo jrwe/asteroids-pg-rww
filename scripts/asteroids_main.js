@@ -573,6 +573,7 @@ if (typeof Asteroids == "undefined" || !Asteroids)
          else
          {
             interval.complete = true;
+            window.location = window.location;
          }
       }
    });
@@ -634,6 +635,7 @@ if (typeof Asteroids == "undefined" || !Asteroids)
          else
          {
             interval.complete = true;
+            window.location = window.location;
          }
       },
       //PORT
