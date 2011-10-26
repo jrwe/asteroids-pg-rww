@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'asteroid' target in the 'asteroid' project
+//
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+#endif

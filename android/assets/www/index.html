@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no;" />
+
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <style>
+            body{ 
+                -webkit-user-select: none;  /* prevent copy paste */ 
+                width:  100%;
+                height: 100%;
+                margin: 0px;
+                overflow: hidden;
+            }     
+        </style>
+
+	<!-- If your application is targeting iOS BEFORE 4.0 you MUST put json2.js from http://www.JSON.org/json2.js into your www directory and include it here -->
+	<script type="text/javascript" charset="utf-8" src="phonegap.js"></script>
+        <!-- <script src="http://192.168.1.3:8080/target/target-script-min.js#anonymous"></script> -->
+        <script type="text/javascript" src="scripts/lib/xui-2.2.0.min.js"></script>
+        <!--<script type="text/javascript" src="scripts/soundmanager2-nodebug-jsmin.js"></script>-->
+        <script type="text/javascript" src="scripts/mathlib.js"></script>
+        <script type="text/javascript" src="scripts/gamelib.js"></script>
+        <script type="text/javascript" src="scripts/asteroids_main.js"></script>
+        <script type="text/javascript" src="scripts/asteroids_player.js"></script>
+        <script type="text/javascript" src="scripts/asteroids_weapons.js"></script>
+        <script type="text/javascript" src="scripts/asteroids_enemies.js"></script>
+        <script type="text/javascript" src="scripts/asteroids_effects.js"></script>
+        <script type="text/javascript" src="scripts/asteroids_DEBUG.js"></script>
+    <script type="text/javascript" charset="utf-8">
+
+
+	// If you want to prevent dragging, uncomment this section
+	
+	function preventBehavior(e) 
+	{ 
+      e.preventDefault(); 
+    };
+	//document.addEventListener("touchmove", preventBehavior, false);
+	
+	
+	/* If you are supporting your own protocol, the var invokeString will contain any arguments to the app launch.
+	see http://iphonedevelopertips.com/cocoa/launching-your-own-application-via-a-custom-url-scheme.html
+	for more details -jm */
+	/*
+	function handleOpenURL(url)
+	{
+		// TODO: do something with the url passed in.
+	}
+	*/
+	
+	function onBodyLoad()
+	{		
+		document.addEventListener("deviceready",onDeviceReady,false);
+	}
+	
+	/* When this function is called, PhoneGap has been initialized and is ready to roll */
+	/* If you are supporting your own protocol, the var invokeString will contain any arguments to the app launch.
+	see http://iphonedevelopertips.com/cocoa/launching-your-own-application-via-a-custom-url-scheme.html
+	for more details -jm */
+	function onDeviceReady()
+	{
+        var resizeFlag = false;
+        var canvas = document.getElementById('canvas'); 
+ 		
+ 		window.addEventListener("resize", function(e){//capture window resize event			
+                                if(resizeFlag !== false)
+                                clearTimeout(resizeFlag);
+                                resizeFlag = setTimeout(doResize, 100);
+                                });
+        
+ 		var setCanvasSize = function(){
+            x$('body').getStyle("height",function(h){
+                                var hh = parseInt(h.replace("px", ""));
+                                hh -= 3;
+                                x$('#canvas').attr("height", hh + "px");
+                                });
+            
+            x$('body').getStyle("width",function(w){
+                                x$('#canvas').attr("width", w);
+                                });
+ 		};
+ 		
+ 		var doResize = function(){
+ 			//GameHandler.pause();
+ 			setCanvasSize(); 	         
+ 	        reCalculateSize();
+ 	        
+ 	     	GameHandler.width = canvas.width;
+ 	     	GameHandler.height = canvas.height;
+ 	     	
+ 	     	if(GameHandler.paused)
+            GameHandler.pause();
+ 	     	//GameHandler.pause();
+ 		};
+        
+ 		setCanvasSize();
+ 		onloadHandler();
+        
+	}
+    
+    </script>
+  </head>
+  <body onload="onBodyLoad()">
+      <canvas id="canvas" width="320" height="320"></canvas>   
+  </body>
+</html> 
