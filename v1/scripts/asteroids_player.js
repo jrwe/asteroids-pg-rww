@@ -18,22 +18,21 @@
       
       // setup weapons
       this.primaryWeapons = [];
-      this.primaryWeapons["main"] = new Asteroids.PrimaryWeapon(this);
       
       return this;
    };
    
    extend(Asteroids.Player, Game.SpriteActor,
    {
-      MAX_PLAYER_VELOCITY: 10.0,
-      PLAYER_RADIUS: 10,
+      MAX_PLAYER_VELOCITY: 8.0,
+      PLAYER_RADIUS: 9,
       SHIELD_RADIUS: 14,
       SHIELD_ANIM_LENGTH: 100,
       SHIELD_MIN_PULSE: 20,
-      ENERGY_INIT: 200,
-      THRUST_DELAY: 1,
-      BOMB_RECHARGE: 20,
-      BOMB_ENERGY: 40,
+      ENERGY_INIT: 400,
+      THRUST_DELAY_MS: 100,
+      BOMB_RECHARGE_MS: 800,
+      BOMB_ENERGY: 80,
       
       /**
        * Player heading
@@ -76,9 +75,9 @@
       engineThrust: false,
       
       /**
-       * Frame that the player was killed on - to cause a delay before respawning the player
+       * Time that the player was killed - to cause a delay before respawning the player
        */
-      killedOnFrame: 0,
+      killedOn: 0,
       
       /**
        * Power up setting - can fire when shielded
@@ -100,21 +99,23 @@
             ctx.save();
             ctx.translate(this.position.x, this.position.y);
             ctx.rotate(headingRad);
-            ctx.globalAlpha = 0.4 + Math.random()/2;
+            ctx.globalAlpha = 0.5 + Rnd() * 0.5;
             if (BITMAPS)
             {
-               ctx.fillStyle = "rgb(25,125,255)";
+               ctx.globalCompositeOperation = "lighter";
+               ctx.fillStyle = Asteroids.Colours.PLAYER_THRUST;
             }
             else
             {
-               ctx.shadowColor = ctx.strokeStyle = "rgb(25,125,255)";
+               ctx.shadowColor = ctx.strokeStyle = Asteroids.Colours.PLAYER_THRUST;
             }
             ctx.beginPath();
             ctx.moveTo(-5, 8);
             ctx.lineTo(5, 8);
-            ctx.lineTo(0, 15 + Math.random()*7);
+            ctx.lineTo(0, 18 + Rnd() * 6);
             ctx.closePath();
-            if (BITMAPS) ctx.fill(); else ctx.stroke();
+            if (BITMAPS) ctx.fill();
+            else ctx.stroke();
             ctx.restore();
             this.engineThrust = false;
          }
@@ -122,18 +123,22 @@
          // render player graphic
          if (BITMAPS)
          {
-            var size = (this.PLAYER_RADIUS * 2) + 4;
-            var normAngle = this.heading % 360;
+            var size = (this.PLAYER_RADIUS * 2) + 6;
+            // normalise the player heading to 0-359 degrees
+            // then locate the correct frame in the sprite strip - an image for each 4 degrees of rotation
+            var normAngle = Floor(this.heading) % 360;
             if (normAngle < 0)
             {
                normAngle = 360 + normAngle;
             }
-            ctx.drawImage(g_playerImg, 0, normAngle * 16, 64, 64, this.position.x - (size / 2), this.position.y - (size / 2), size, size);
+            ctx.save();
+            ctx.drawImage(g_playerImg, 0, Floor(normAngle / 4) * 64, 64, 64, this.position.x - (size / 2), this.position.y - (size / 2), size, size);
+            ctx.restore();
          }
          else
          {
             ctx.save();
-            ctx.shadowColor = ctx.strokeStyle = "rgb(255,255,255)";
+            ctx.shadowColor = ctx.strokeStyle = "#fff";
             ctx.translate(this.position.x, this.position.y);
             ctx.rotate(headingRad);
             ctx.beginPath();
@@ -163,7 +168,7 @@
                ctx.save();
                ctx.translate(this.position.x, this.position.y);
                ctx.rotate(headingRad);
-               ctx.shadowColor = ctx.strokeStyle = "rgb(100,100,255)";
+               ctx.shadowColor = ctx.strokeStyle = Asteroids.Colours.PLAYER_SHIELD;
                ctx.beginPath();
                ctx.arc(0, 2, this.SHIELD_RADIUS, 0, TWOPI, true);
                ctx.closePath();
@@ -172,34 +177,37 @@
             }
             
             this.shieldCounter--;
-            this.energy--;
+            this.energy -= 1.5;
          }
       },
       
       /**
        * Execute player forward thrust request
-       * Automatically a delay is used between each application - to ensure stable thrust on all machines.
        */
       thrust: function thrust()
       {
-         // now test we did not thrust too recently - to stop fast key repeat issues
-         if (GameHandler.frameCount - this.thrustRecharge > this.THRUST_DELAY)
+         // now test we did not thrust too recently, based on time since last thrust
+         // request - ensures same thrust at any framerate
+         if (GameHandler.frameStart - this.thrustRecharge > this.THRUST_DELAY_MS)
          {
-            // update last frame count
-            this.thrustRecharge = GameHandler.frameCount;
+            // update last thrust time
+            this.thrustRecharge = GameHandler.frameStart;
             
             // generate a small thrust vector
-            var t = new Vector(0.0, -0.55);
+            var t = new Vector(0.0, -0.5);
             
             // rotate thrust vector by player current heading
             t.rotate(this.heading * RAD);
             
-            // test player won't then exceed maximum velocity
-            var pv = this.vector.clone();
-            if (pv.add(t).length() < this.MAX_PLAYER_VELOCITY)
+            // add player thrust vector to position
+            this.vector.add(t);
+            
+            // player can't exceed maximum velocity - scale vector down if
+            // this occurs - do this rather than not adding the thrust at all
+            // otherwise the player cannot turn and thrust at max velocity
+            if (this.vector.length() > this.MAX_PLAYER_VELOCITY)
             {
-               // add to current vector (which then gets applied during each render loop)
-               this.vector.add(t);
+               this.vector.scale(this.MAX_PLAYER_VELOCITY / this.vector.length());
             }
          }
          // mark so that we know to render engine thrust graphics
@@ -213,7 +221,7 @@
       activateShield: function activateShield()
       {
          // ensure shield stays up for a brief pulse between key presses!
-         if (this.energy > 0)
+         if (this.energy >= this.SHIELD_MIN_PULSE)
          {
             this.shieldCounter = this.SHIELD_MIN_PULSE;
          }
@@ -237,7 +245,7 @@
       kill: function kill()
       {
          this.alive = false;
-         this.killedOnFrame = GameHandler.frameCount;
+         this.killedOn = GameHandler.frameStart;
       },
       
       /**
@@ -246,6 +254,7 @@
        */
       firePrimary: function firePrimary(bulletList)
       {
+         var playedSound = false;
          // attempt to fire the primary weapon(s)
          // first ensure player is alive and the shield is not up
          if (this.alive && (!this.isShieldActive() || this.fireWhenShield))
@@ -266,7 +275,11 @@
                   {
                      bulletList.push(b);
                   }
-                  //if (soundManager) soundManager.play('laser');
+                  if (!playedSound && SOUND && soundManager)
+                  {
+                     soundManager.play('laser');
+                     playedSound = true;
+                  }
                }
             }
          }
@@ -283,17 +296,17 @@
          if (this.alive && (!this.isShieldActive() || this.fireWhenShield) && this.energy > this.BOMB_ENERGY)
          {
             // now test we did not fire too recently
-            if (GameHandler.frameCount - this.bombRecharge > this.BOMB_RECHARGE)
+            if (GameHandler.frameStart - this.bombRecharge > this.BOMB_RECHARGE_MS)
             {
-               // ok, update last fired frame and we can now generate a bomb
-               this.bombRecharge = GameHandler.frameCount;
+               // ok, update last fired time and we can now generate a bomb
+               this.bombRecharge = GameHandler.frameStart;
                
                // decrement energy supply
                this.energy -= this.BOMB_ENERGY;
                
                // generate a vector rotated to the player heading and then add the current player
                // vector to give the bomb the correct directional momentum
-               var t = new Vector(0.0, -6.0);
+               var t = new Vector(0.0, -3.0);
                t.rotate(this.heading * RAD);
                t.add(this.vector);
                

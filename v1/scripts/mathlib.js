@@ -1,15 +1,34 @@
 /**
- * Game Math class library, utility functions and constants.
+ * Math class library, utility functions and constants.
  * 
- * (C) 2010 Kevin Roast kevtoast@yahoo.com @kevinroast
+ * Copyright (C) Kevin Roast 2010
+ * http://www.kevs3d.co.uk/dev
+ * email: kevtoast at yahoo.com
+ * twitter: @kevinroast
  * 
- * Please see: license.txt
- * You are welcome to use this code, but I would appreciate an email or tweet
- * if you do anything interesting with it!
+ * 30/04/09 First version
+ * 
+ * I place this code in the public domain - because it's not rocket science
+ * and it won't make me any money, so do whatever you want with it, go crazy.
+ * I would appreciate an email or tweet if you do anything fun with it!
  */
 
 var RAD = Math.PI/180.0;
+var PI = Math.PI;
 var TWOPI = Math.PI*2;
+var ONEOPI = 1.0 / Math.PI;
+var PIO2 = Math.PI/2;
+var PIO4 = Math.PI/4;
+var PIO8 = Math.PI/8;
+var PIO16 = Math.PI/16;
+var PIO32 = Math.PI/32;
+var Rnd = Math.random;
+var Sin = Math.sin;
+var Cos = Math.cos;
+var Sqrt = Math.sqrt;
+var Floor = Math.floor;
+var Atan2 = Math.atan2;
+var Ceil = Math.ceil;
 
 
 /**
@@ -17,7 +36,15 @@ var TWOPI = Math.PI*2;
  */
 function randomInt(low, high)
 {
-   return Math.floor(Math.random() * (high - low + 1) + low);
+   return ~~(Rnd() * (high - low + 1) + low);
+}
+
+
+function weightedRandom(weight)
+{
+   var input = Rnd();
+   if (input < 0.5) return 1 - Math.pow(1 - input, weight !== undefined ? weight : 2) / 2; 
+   return 0.5 + Math.pow((input - 0.5) * 2, weight !== undefined ? weight : 2) / 2; 
 }
 
 
@@ -132,12 +159,22 @@ function isArray(obj)
          this.y += v.y;
          return this;
       },
+
+      nadd: function(v)
+      {
+         return new Vector(this.x + v.x, this.y + v.y);
+      },
       
       sub: function(v)
       {
          this.x -= v.x;
          this.y -= v.y;
          return this;
+      },
+      
+      nsub: function(v)
+      {
+         return new Vector(this.x - v.x, this.y - v.y);
       },
       
       dot: function(v)
@@ -147,32 +184,32 @@ function isArray(obj)
       
       length: function()
       {
-         return Math.sqrt(this.x * this.x + this.y * this.y); 
+         return Sqrt(this.x * this.x + this.y * this.y); 
       },
       
       distance: function(v)
       {
-         var xx = this.x - v.x;
-         var yy = this.y - v.y;
-         return Math.sqrt(xx * xx + yy * yy); 
+         var xx = this.x - v.x,
+             yy = this.y - v.y;
+         return Sqrt(xx * xx + yy * yy); 
       },
       
       theta: function()
       {
-         return Math.atan2(this.y, this.x);
+         return Atan2(this.y, this.x);
       },
       
       thetaTo: function(vec)
       {
          // calc angle between the two vectors
-         var v = this.clone().norm();
-         var w = vec.clone().norm();
+         var v = this.clone().norm(),
+             w = vec.clone().norm();
          return Math.acos(v.dot(w));
       },
       
       thetaTo2: function(vec)
       {
-         return Math.atan2(vec.y, vec.x) - Math.atan2(this.y, this.x);
+         return Atan2(vec.y, vec.x) - Atan2(this.y, this.x);
       },
       
       norm: function()
@@ -183,18 +220,31 @@ function isArray(obj)
          return this;
       },
       
+      nnorm: function()
+      {
+         var len = this.length();
+         return new Vector(this.x / len, this.y / len);
+      },
+      
       rotate: function(a)
       {
-      	var ca = Math.cos(a);
-      	var sa = Math.sin(a);
-      	with (this)
-      	{
-      		var rx = x*ca - y*sa;
-      		var ry = x*sa + y*ca;
-      		x = rx;
-      		y = ry;
-      	}
-      	return this;
+        var ca = Cos(a),
+            sa = Sin(a);
+        with (this)
+        {
+            var rx = x*ca - y*sa,
+                ry = x*sa + y*ca;
+            x = rx;
+            y = ry;
+        }
+        return this;
+      },
+      
+      nrotate: function(a)
+      {
+        var ca = Cos(a),
+            sa = Sin(a);
+         return new Vector(this.x*ca - this.y*sa, this.x*sa + this.y*ca);
       },
       
       invert: function()
@@ -204,11 +254,35 @@ function isArray(obj)
          return this;
       },
       
+      ninvert: function()
+      {
+         return new Vector(-this.x, -this.y);
+      },
+      
       scale: function(s)
       {
          this.x *= s; 
          this.y *= s;
          return this;
+      },
+      
+      nscale: function(s)
+      {
+         return new Vector(this.x * s, this.y * s);
+      },
+      
+      scaleTo: function(s)
+      {
+         var len = s / this.length();
+         this.x *= len;
+         this.y *= len;
+         return this;
+      },
+      
+      nscaleTo: function(s)
+      {
+         var len = s / this.length();
+         return new Vector(this.x * len, this.y * len)
       }
    };
 })();
@@ -297,20 +371,20 @@ function isArray(obj)
       
       length: function()
       {
-         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z); 
+         return Sqrt(this.x * this.x + this.y * this.y + this.z * this.z); 
       },
       
       distance: function(v)
       {
-         var xx = this.x - v.x;
-         var yy = this.y - v.y;
-         var zz = this.z - v.z;
-         return Math.sqrt(xx * xx + yy * yy + zz * zz); 
+         var xx = this.x - v.x,
+             yy = this.y - v.y,
+             zz = this.z - v.z;
+         return Sqrt(xx * xx + yy * yy + zz * zz); 
       },
       
       thetaTo: function(v)
       {
-         // Expanded version of: Math.atan2(this.cross(v).length(), this.dot(v));
+         // Expanded version of: Atan2(this.cross(v).length(), this.dot(v));
          // to avoid intermediate object creation (about 30% faster..!)
          
          // calculate cross product
@@ -318,7 +392,12 @@ function isArray(obj)
              y = this.z*v.x - this.x*v.z,
              z = this.x*v.y - this.y*v.x;
          // atan2 of length of cross product with dot product of supplied vector
-         return Math.atan2(Math.sqrt(x * x + y * y + z * z), this.dot(v));
+         return Atan2(Sqrt(x * x + y * y + z * z), this.dot(v));
+      },
+      
+      thetaTo2: function(v)
+      {
+         return Math.acos(this.dot(v) / (Sqrt(this.x * this.x + this.y * this.y + this.z * this.z) * Sqrt(v.x * v.x + v.y * v.y + v.z * v.z)));
       },
       
       norm: function()
@@ -336,6 +415,80 @@ function isArray(obj)
          this.y *= s;
          this.z *= s;
          return this;
+      }
+   };
+})();
+
+
+/**
+ * Image Preloader class. Executes the supplied callback function once all
+ * registered images are loaded by the browser.
+ * 
+ * @class Preloader
+ */
+(function()
+{
+   Preloader = function()
+   {
+      this.images = new Array();
+      return this;
+   };
+   
+   Preloader.prototype =
+   {
+      /**
+       * Image list
+       *
+       * @property images
+       * @type Array
+       */
+      images: null,
+      
+      /**
+       * Callback function
+       *
+       * @property callback
+       * @type Function
+       */
+      callback: null,
+      
+      /**
+       * Images loaded so far counter
+       */
+      counter: 0,
+      
+      /**
+       * Add an image to the list of images to wait for
+       */
+      addImage: function addImage(img, url)
+      {
+         var me = this;
+         img.url = url;
+         // attach closure to the image onload handler
+         img.onload = function()
+         {
+            me.counter++;
+            if (me.counter === me.images.length)
+            {
+               // all images are loaded - execute callback function
+               me.callback.call(me);
+            }
+         };
+         this.images.push(img);
+      },
+      
+      /**
+       * Load the images and call the supplied function when ready
+       */
+      onLoadCallback: function onLoadCallback(fn)
+      {
+         this.counter = 0;
+         this.callback = fn;
+         // load the images
+         for (var i=0, j=this.images.length; i<j; i++)
+         {
+            this.images[i].src = this.images[i].url;
+         }
       }
    };
 })();

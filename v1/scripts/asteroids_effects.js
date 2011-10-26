@@ -1,5 +1,325 @@
 /**
+ * Particle emitter effect actor class.
+ * 
+ * A simple particle emitter, that does not recycle particles, but sets itself as expired() once
+ * all child particles have expired.
+ * 
+ * Requires a function known as the emitter that is called per particle generated.
+ * 
+ * @namespace Asteroids
+ * @class Asteroids.Particles
+ */
+(function()
+{
+   /**
+    * Constructor
+    * 
+    * @param p {Vector} Emitter position
+    * @param v {Vector} Emitter velocity
+    * @param count {Integer} Number of particles
+    * @param fnEmitter {Function} Emitter function to call per particle generated
+    */
+   Asteroids.Particles = function(p, v, count, fnEmitter)
+   {
+      Asteroids.Particles.superclass.constructor.call(this, p, v);
+      
+      // generate particles based on the supplied emitter function
+      this.particles = new Array(count);
+      for (var i=0; i<count; i++)
+      {
+         this.particles[i] = fnEmitter.call(this, i);
+      }
+      
+      return this;
+   };
+   
+   extend(Asteroids.Particles, Game.Actor,
+   {
+      particles: null,
+      
+      /**
+       * Particle effect rendering method
+       * 
+       * @param ctx {object} Canvas rendering context
+       */
+      onRender: function onRender(ctx)
+      {
+         ctx.save();
+         ctx.shadowBlur = 0;
+         ctx.globalCompositeOperation = "lighter";
+         for (var i=0, particle; i<this.particles.length; i++)
+         {
+            particle = this.particles[i];
+            
+            // update particle and test for lifespan
+            if (particle.update())
+            {
+               ctx.save();
+               particle.render(ctx);
+               ctx.restore();
+            }
+            else
+            {
+               // particle no longer alive, remove from list
+               this.particles.splice(i, 1);
+            }
+         }
+         ctx.restore();
+      },
+      
+      expired: function expired()
+      {
+         return (this.particles.length === 0);
+      }
+   });
+})();
+
+
+/**
+ * Default Asteroids Particle structure.
+ * Currently supports three particle types; point, vector line and smudge.
+ */
+function AsteroidsParticle(position, vector, size, type, lifespan, fadelength, colour)
+{
+   this.particleStart = GameHandler.frameStart;
+   this.position = position;
+   this.vector = vector;
+   this.size = size;
+   this.type = type;
+   this.lifespan = lifespan;
+   this.fadelength = fadelength;
+   this.colour = colour ? colour : Asteroids.Colours.PARTICLE; // default colour if none set
+   // randomize rotation speed and angle for line particle
+   if (type === 1)
+   {
+      this.rotate = Rnd() * TWOPI;
+      this.rotationv = (Rnd() - 0.5) * 0.5;
+   }
+   
+   /**
+    * Helper to return a value multiplied by the ratio of the remaining lifespan
+    * 
+    * @param val     value to apply to the ratio of remaining lifespan
+    * @param offset  offset at which to begin applying the ratio
+    */
+   this.fadeValue = function(val, offset)
+   {
+      var rem = this.lifespan - (GameHandler.frameStart - this.particleStart),
+          result = val;
+      if (rem < offset)
+      {
+         result = (val / offset) * rem;
+         // this is not a simple counter - so we need to crop the value
+         // as the time between frames is not determinate
+         if (result < 0) result = 0;
+         else if (result > val) result = val;
+      }
+      return result;
+   };
+   
+   this.update = function()
+   {
+      this.position.add(this.vector);
+      return !(GameHandler.frameStart - this.particleStart > this.lifespan);
+   };
+   
+   this.render = function(ctx)
+   {
+      ctx.globalAlpha = this.fadeValue(1.0, this.fadelength);
+      switch (this.type)
+      {
+         case 0:  // point (prerendered image)
+            ctx.translate(this.position.x, this.position.y);
+            ctx.drawImage(
+               GameHandler.bitmaps.images["points_" + this.colour][this.size], 0, 0);
+            break;
+         // TODO: prerender a glowing line to use as the particle!
+         case 1:  // line
+            ctx.translate(this.position.x, this.position.y);
+            var s = this.size;
+            ctx.rotate(this.rotate);
+            this.rotate += this.rotationv;
+            ctx.strokeStyle = this.colour;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(-s, -s);
+            ctx.lineTo(s, s);
+            ctx.closePath();
+            ctx.stroke();
+            break;
+         case 2:  // smudge (prerendered image)
+            Game.Util.renderImage(ctx, GameHandler.bitmaps.images["smudges_" + this.colour][this.size],
+               0, 0, (this.size + 1) << 3, this.position.x, this.position.y, (this.size + 1) << 3);
+            break;
+      }
+   };
+}
+
+
+/**
+ * Asteroid particle based explosion - Particle effect actor class.
+ * 
+ * @namespace Asteroids
+ * @class Asteroids.AsteroidExplosion
+ */
+(function()
+{
+   /**
+    * Constructor
+    */
+   Asteroids.AsteroidExplosion = function(p, v, asteroid)
+   {
+      // for bitmap asteroids, we want a mixed number of smudge/particles
+      // for vector asteroids, we want a number of vector lines
+      var count = (BITMAPS ? asteroid.size * 2 : asteroid.size + 2);
+      Asteroids.AsteroidExplosion.superclass.constructor.call(this, p, v, count, function()
+         {
+            // randomise radial direction vector - speed and angle, then add parent vector
+            var pos = p.clone();
+            if (BITMAPS)
+            {
+               if (Rnd() < 0.5)
+               {
+                  var t = new Vector(0, randomInt(5, 10));
+                  t.rotate(Rnd() * TWOPI).add(v);
+                  return new AsteroidsParticle(
+                     pos, t, ~~(Rnd() * 4), 0, 400, 300);
+               }
+               else
+               {
+                  var t = new Vector(0, randomInt(1, 3));
+                  t.rotate(Rnd() * TWOPI).add(v);
+                  return new AsteroidsParticle(
+                     pos, t, ~~(Rnd() * 4) + asteroid.size, 2, 500, 250);
+               }
+            }
+            else
+            {
+               var t = new Vector(0, randomInt(2, 5));
+               t.rotate(Rnd() * TWOPI).add(v);
+               return new AsteroidsParticle(
+                  pos, t, Rnd() * asteroid.size + 4, 1, 400, 300, "white");
+            }
+         });
+      
+      return this;
+   };
+   
+   extend(Asteroids.AsteroidExplosion, Asteroids.Particles);
+})();
+
+
+/**
+ * Player particle based explosion - Particle effect actor class.
+ * 
+ * @namespace Asteroids
+ * @class Asteroids.PlayerExplosion
+ */
+(function()
+{
+   /**
+    * Constructor
+    */
+   Asteroids.PlayerExplosion = function(p, v)
+   {
+      // for bitmap mode, we want a mixed number of smudge/particles
+      // for vector mode, we want a number of vector lines
+      var count = (BITMAPS ? 12 : 3);
+      Asteroids.PlayerExplosion.superclass.constructor.call(this, p, v, count, function()
+         {
+            // randomise radial direction vector - speed and angle, then add parent vector
+            var pos = p.clone();
+            if (BITMAPS)
+            {
+               if (Rnd() < 0.5)
+               {
+                  var t = new Vector(0, randomInt(5, 10));
+                  t.rotate(Rnd() * TWOPI).add(v);
+                  return new AsteroidsParticle(
+                     pos, t, ~~(Rnd() * 4), 0, 400, 300);
+               }
+               else
+               {
+                  var t = new Vector(0, randomInt(1, 3));
+                  t.rotate(Rnd() * TWOPI).add(v);
+                  return new AsteroidsParticle(
+                     pos, t, ~~(Rnd() * 4) + 2, 2, 500, 250);
+               }
+            }
+            else
+            {
+               var t = new Vector(0, randomInt(2, 5));
+               t.rotate(Rnd() * TWOPI).add(v);
+               return new AsteroidsParticle(
+                  pos, t, 6, 1, 400, 300, "white");
+            }
+         });
+      
+      return this;
+   };
+   
+   extend(Asteroids.PlayerExplosion, Asteroids.Particles);
+})();
+
+
+/**
+ * Enemy particle based explosion - Particle effect actor class.
+ * 
+ * @namespace Asteroids
+ * @class Asteroids.EnemyExplosion
+ */
+(function()
+{
+   /**
+    * Constructor
+    */
+   Asteroids.EnemyExplosion = function(p, v, enemy)
+   {
+      // for bitmap mode, we want a mixed number of smudge/particles
+      // for vector mode, we want a number of vector lines
+      var count = (BITMAPS ? 8 : 6);
+      Asteroids.EnemyExplosion.superclass.constructor.call(this, p, v, count, function()
+         {
+            // randomise radial direction vector - speed and angle, then add parent vector
+            var pos = p.clone();
+            if (BITMAPS)
+            {
+               if (Rnd() < 0.5)
+               {
+                  var t = new Vector(0, randomInt(5, 10));
+                  t.rotate(Rnd() * TWOPI).add(v);
+                  return new AsteroidsParticle(
+                     pos, t, ~~(Rnd() * 4), 0, 400, 300, Asteroids.Colours.ENEMY_SHIP);
+               }
+               else
+               {
+                  var t = new Vector(0, randomInt(1, 3));
+                  t.rotate(Rnd() * TWOPI).add(v);
+                  return new AsteroidsParticle(
+                     pos, t, ~~(Rnd() * 4) + (enemy.size === 0 ? 2 : 0), 2, 500, 250, Asteroids.Colours.ENEMY_SHIP);
+               }
+            }
+            else
+            {
+               var t = new Vector(0, randomInt(2, 4));
+               t.rotate(Rnd() * TWOPI).add(v);
+               return new AsteroidsParticle(
+                  pos, t, (enemy.size === 0 ? 8 : 4), 1, 400, 300, Asteroids.Colours.ENEMY_SHIP);
+            }
+         });
+      
+      return this;
+   };
+   
+   extend(Asteroids.EnemyExplosion, Asteroids.Particles);
+})();
+
+
+/**
  * Basic explosion effect actor class.
+ * 
+ * TODO: replace all instances of this with particle effects for BITMAP mode - this is still used
+ *       by the smartbomb - what about vector mode? replace with expanding vector circle effect?
  * 
  * @namespace Asteroids
  * @class Asteroids.Explosion
@@ -15,7 +335,7 @@
    
    extend(Asteroids.Explosion, Game.EffectActor,
    {
-      FADE_LENGTH: 10,
+      FADE_LENGTH: 300,
       
       /**
        * Explosion size
@@ -30,9 +350,9 @@
       onRender: function onRender(ctx)
       {
          // fade out
-         var brightness = Math.floor((255 / this.FADE_LENGTH) * this.lifespan);
-         var rad = (this.size * 8 / this.FADE_LENGTH) * this.lifespan;
-         var rgb = brightness.toString();
+         var brightness = Floor(this.effectValue(255)),
+             rad = this.effectValue(this.size * 8),
+             rgb = brightness.toString();
          ctx.save();
          ctx.globalAlpha = 0.75;
          ctx.fillStyle = "rgb(" + rgb + ",0,0)";
@@ -47,125 +367,58 @@
 
 
 /**
- * Player Explosion effect actor class.
+ * Player bullet impact effect - Particle effect actor class.
+ * Used when an enemy is hit by player bullet but not destroyed.
  * 
  * @namespace Asteroids
- * @class Asteroids.PlayerExplosion
+ * @class Asteroids.PlayerBulletImpact
  */
 (function()
 {
-   Asteroids.PlayerExplosion = function(p, v)
+   Asteroids.PlayerBulletImpact = function(p, v)
    {
-      Asteroids.PlayerExplosion.superclass.constructor.call(this, p, v, this.FADE_LENGTH);
+      Asteroids.PlayerBulletImpact.superclass.constructor.call(this, p, v, 5, function()
+         {
+            // slightly randomise vector angle - then add parent vector
+            var t = v.nscale(0.75 + Rnd() * 0.5);
+            t.rotate(Rnd() * PIO4 - PIO8);
+            return new AsteroidsParticle(
+               p.clone(), t, ~~(Rnd() * 4), 0, 250, 150, Asteroids.Colours.GREEN_LASER);
+         });
+      
       return this;
    };
    
-   extend(Asteroids.PlayerExplosion, Game.EffectActor,
-   {
-      FADE_LENGTH: 15,
-      
-      /**
-       * Explosion rendering method
-       * 
-       * @param ctx {object} Canvas rendering context
-       */
-      onRender: function onRender(ctx)
-      {
-         ctx.save();
-         var alpha = (1.0 / this.FADE_LENGTH) * this.lifespan;
-         ctx.globalCompositeOperation = "lighter";
-         ctx.globalAlpha = alpha;
-         
-         var rad;
-         if (this.lifespan > 5 && this.lifespan <= 15)
-         {
-            var offset = this.lifespan - 5;
-            rad = (48 / this.FADE_LENGTH) * offset;
-            ctx.fillStyle = "rgb(255,170,30)";
-            ctx.beginPath();
-            ctx.arc(this.position.x-2, this.position.y-2, rad, 0, TWOPI, true);
-            ctx.closePath();
-            ctx.fill();
-         }
-         
-         if (this.lifespan > 2 && this.lifespan <= 12)
-         {
-            var offset = this.lifespan - 2;
-            rad = (32 / this.FADE_LENGTH) * offset;
-            ctx.fillStyle = "rgb(255,255,50)";
-            ctx.beginPath();
-            ctx.arc(this.position.x+2, this.position.y+2, rad, 0, TWOPI, true);
-            ctx.closePath();
-            ctx.fill();
-         }
-         
-         if (this.lifespan <= 10)
-         {
-            var offset = this.lifespan;
-            rad = (24 / this.FADE_LENGTH) * offset;
-            ctx.fillStyle = "rgb(255,70,100)";
-            ctx.beginPath();
-            ctx.arc(this.position.x+2, this.position.y-2, rad, 0, TWOPI, true);
-            ctx.closePath();
-            ctx.fill();
-         }
-         
-         ctx.restore();
-      }
-   });
+   extend(Asteroids.PlayerBulletImpact, Asteroids.Particles);
 })();
 
 
 /**
- * Impact effect (from bullet hitting an object) actor class.
+ * Enemy bullet impact effect - Particle effect actor class.
+ * Used when an enemy is hit by player bullet but not destroyed.
  * 
  * @namespace Asteroids
- * @class Asteroids.Impact
+ * @class Asteroids.EnemyBulletImpact
  */
 (function()
 {
-   Asteroids.Impact = function(p, v)
+   Asteroids.EnemyBulletImpact = function(p, v)
    {
-      Asteroids.Impact.superclass.constructor.call(this, p, v, this.FADE_LENGTH);
+      Asteroids.EnemyBulletImpact.superclass.constructor.call(this, p, v, 5, function()
+         {
+            // slightly randomise vector angle - then add parent vector
+            var t = v.nscale(0.75 + Rnd() * 0.5);
+            t.rotate(Rnd() * PIO4 - PIO8);
+            return new AsteroidsParticle(
+               p.clone(), t, ~~(Rnd() * 4), 0, 250, 150, Asteroids.Colours.ENEMY_SHIP);
+         });
+      
       return this;
    };
    
-   extend(Asteroids.Impact, Game.EffectActor,
-   {
-      FADE_LENGTH: 12,
-      
-      /**
-       * Impact effect rendering method
-       * 
-       * @param ctx {object} Canvas rendering context
-       */
-      onRender: function onRender(ctx)
-      {
-         // fade out alpha
-         var alpha = (1.0 / this.FADE_LENGTH) * this.lifespan;
-         ctx.save();
-         ctx.globalAlpha = alpha * 0.75;
-         if (BITMAPS)
-         {
-            ctx.fillStyle = "rgb(50,255,50)";
-         }
-         else
-         {
-            ctx.shadowColor = ctx.strokeStyle = "rgb(50,255,50)";
-         }
-         ctx.beginPath();
-         ctx.arc(this.position.x, this.position.y, 2, 0, TWOPI, true);
-         ctx.closePath();
-         if (BITMAPS) ctx.fill(); else ctx.stroke();
-         ctx.globalAlpha = alpha;
-         ctx.beginPath();
-         ctx.arc(this.position.x, this.position.y, 1, 0, TWOPI, true);
-         ctx.closePath();
-         if (BITMAPS) ctx.fill(); else ctx.stroke();
-         ctx.restore();
-      }
-   });
+   extend(Asteroids.EnemyBulletImpact, Asteroids.Particles);
 })();
+
 
 
 /**
@@ -181,24 +434,18 @@
       this.fadeLength = (fadeLength ? fadeLength : this.DEFAULT_FADE_LENGTH);
       Asteroids.TextIndicator.superclass.constructor.call(this, p, v, this.fadeLength);
       this.msg = msg;
-      if (textSize)
-      {
-         this.textSize = textSize;
-      }
-      if (colour)
-      {
-         this.colour = colour;
-      }
+      if (textSize) this.textSize = textSize;
+      if (colour) this.colour = colour;
       return this;
    };
    
    extend(Asteroids.TextIndicator, Game.EffectActor,
    {
-      DEFAULT_FADE_LENGTH: 16,
+      DEFAULT_FADE_LENGTH: 500,
       fadeLength: 0,
       textSize: 12,
       msg: null,
-      colour: "rgb(255,255,255)",
+      colour: "white",
       
       /**
        * Text indicator effect rendering method
@@ -208,7 +455,7 @@
       onRender: function onRender(ctx)
       {
          // fade out alpha
-         var alpha = (1.0 / this.fadeLength) * this.lifespan;
+         var alpha = this.effectValue(1.0);
          ctx.save();
          ctx.globalAlpha = alpha;
          Game.fillText(ctx, this.msg, this.textSize + "pt Courier New", this.position.x, this.position.y, this.colour);
@@ -237,9 +484,7 @@
       return this;
    };
    
-   extend(Asteroids.ScoreIndicator, Asteroids.TextIndicator,
-   {
-   });
+   extend(Asteroids.ScoreIndicator, Asteroids.TextIndicator);
 })();
 
 
@@ -261,7 +506,7 @@
    {
       RADIUS: 8,
       pulse: 128,
-      pulseinc: 8,
+      pulseinc: 5,
       
       /**
        * Power up rendering method
@@ -347,7 +592,7 @@
                   enemy = scene.enemies[n];
                   if (enemy instanceof Asteroids.Asteroid)
                   {
-                     enemy.vector.scale(0.75);
+                     enemy.vector.scale(0.66);
                   }
                }
                break;
@@ -409,9 +654,9 @@
          if (message)
          {
             // generate a effect indicator at the destroyed enemy position
-            var vec = new Vector(0, -3.0);
+            var vec = new Vector(0, -1.5);
             var effect = new Asteroids.TextIndicator(
-                  new Vector(this.position.x, this.position.y - this.RADIUS), vec, message, null, null, 32);
+                  new Vector(this.position.x, this.position.y - this.RADIUS), vec, message, null, null, 700);
             scene.effects.push(effect);
          }
       }

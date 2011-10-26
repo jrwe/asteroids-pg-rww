@@ -9,10 +9,14 @@
  * 
  * 30/04/09 Initial version.
  * 12/05/09 Refactored to remove globals into GameHandler instance and added FPS controller game loop.
+ * 19/09/11 Refactored to use requestAnimationFrame - 60fps and frame multipler calculation
  */
 
 var KEY = { SHIFT:16, CTRL:17, ESC:27, RIGHT:39, UP:38, LEFT:37, DOWN:40, SPACE:32,
-            A:65, E:69, G:71, L:76, P:80, R:82, Z:90 };
+            A:65, E:69, G:71, L:76, P:80, R:82, S:83, Z:90 };
+var iOS = (navigator.userAgent.indexOf("iPhone;") != -1 ||
+           navigator.userAgent.indexOf("iPod;") != -1 ||
+           navigator.userAgent.indexOf("iPad;") != -1);
 
 /**
  * Game Handler.
@@ -53,9 +57,24 @@ var GameHandler =
    frameCount: 0,
    
    /**
+    * Frame multiplier - i.e. against the ideal fps
+    */ 
+   frameMultipler: 1,
+   
+   /**
+    * Last frame start time in ms
+    */
+   frameStart: 0,
+   
+   /**
     * Debugging output
     */
    maxfps: 0,
+   
+   /**
+    * Ideal FPS constant
+    */
+   FPSMS: 1000/60,
    
    /**
     * Init function called once by your window.onload handler
@@ -63,11 +82,8 @@ var GameHandler =
    init: function()
    {
       this.canvas = document.getElementById('canvas');
-      
-      //this.width = this.canvas.height;
-      //this.height = this.canvas.width;
-      this.width = this.canvas.width;
-      this.height = this.canvas.height;
+      this.width = this.canvas.height;
+      this.height = this.canvas.width;
    },
    
    /**
@@ -79,8 +95,13 @@ var GameHandler =
     */
    start: function(game)
    {
-      if (game) this.game = game;
-      GameHandler.game.tick();
+      if (game instanceof Game.Main)
+      {
+         // first time init
+         this.game = game;
+         GameHandler.frameStart = Date.now();
+      }
+      GameHandler.game.frame.call(GameHandler.game);
    },
    
    /**
@@ -91,7 +112,8 @@ var GameHandler =
       if (this.paused)
       {
          this.paused = false;
-         GameHandler.game.tick();
+         GameHandler.frameStart = Date.now();
+         GameHandler.game.frame.call(GameHandler.game);
       }
       else
       {
@@ -159,95 +181,28 @@ if (typeof Game == "undefined" || !Game)
             }
          }
       };
-      
-      //PORT : touch events
-      //x$(document).on("touchstart", function(e){
-      x$(document).on("touchstart", function(e){
-    	  //console.log('touchstart');
-    	  if (me.sceneIndex !== -1)
-          {    		
-             if (me.scenes[me.sceneIndex].onTouchStart(e.touches, true))//e e.touches[0]
-             {
-                // if the key is handled, prevent any further events
-                if (e)
-                {
-                   event.preventDefault();
-                   event.stopPropagation();
-                }
-             }
-          }
-    	  
-      });//end touchstart
-      
-      //x$(document).on("touchend", function(e){
-      x$(document).on("touchend", function(e){
-    	  //console.log('touchend');
-    	  if (me.sceneIndex !== -1)
-          {
-             if (me.scenes[me.sceneIndex].onTouchEnd(e))//e e.touches[0]
-             {
-                // if the key is handled, prevent any further events
-                if (e)
-                {
-                   event.preventDefault();
-                   event.stopPropagation();
-                }
-             }
-          }
-      });//end touchend
-      
-      x$(document).on("touchmove", function(e){
-    	  //console.log('touchmove');
-    	  e.preventDefault();
-    	  e.stopPropagation();
-    	  
-    	  if (me.sceneIndex !== -1)
-          {
-    		  //console.log(e);
-             if (me.scenes[me.sceneIndex].onTouchStart(e.touches, false))//e e.touches[0]
-             {
-                // if the key is handled, prevent any further events
-                if (e)
-                {
-                   event.preventDefault();
-                   event.stopPropagation();
-                }
-             }
-          }
-      });
-      
    };
    
    Game.Main.prototype =
    {
       scenes: [],
-      
       startScene: null,
-      
       endScene: null,
-      
       currentScene: null,
-      
       sceneIndex: -1,
-      
-      fps: 33,
-      
-      lastFrameStart: 0,
-      
       interval: null,
       
       /**
-       * Game tick method - called by window timeout.
+       * Game frame execute method - called by anim handler timeout
        */
-      tick: function tick()
+      frame: function frame()
       {
-         var frameStart = new Date().getTime();
+         var frameStart = Date.now();
          
          // calculate scene transition and current scene
          var currentScene = this.currentScene;
          if (currentScene === null)
          {
-            //alert("game init - scene at 0");
             // set to scene zero (game init)
             this.sceneIndex = 0;
             currentScene = this.scenes[0];
@@ -255,7 +210,6 @@ if (typeof Game == "undefined" || !Game)
          }
          else if (this.isGameOver())
          {
-            //alert("game over! - scene at endScene");
             this.sceneIndex = -1;
             currentScene = this.endScene;
             currentScene.onInitScene();
@@ -263,7 +217,6 @@ if (typeof Game == "undefined" || !Game)
          
          if ((currentScene.interval === null || currentScene.interval.complete) && currentScene.isComplete())
          {
-            //alert("scene interval complete and scene completed.");
             this.sceneIndex++;
             if (this.sceneIndex < this.scenes.length)
             {
@@ -274,14 +227,14 @@ if (typeof Game == "undefined" || !Game)
                this.sceneIndex = 0;
                currentScene = this.scenes[0];
             }
-            //alert("sceneIndex: " + this.sceneIndex);
             currentScene.onInitScene();
          }
          
-         // setup canvas for a render pass and apply background
+         // setup canvas for a render pass
          var ctx = GameHandler.canvas.getContext('2d');
          
          // render the game and current scene
+         ctx.save();
          if (currentScene.interval === null || currentScene.interval.complete)
          {
             currentScene.onBeforeRenderScene();
@@ -293,16 +246,23 @@ if (typeof Game == "undefined" || !Game)
             this.onRenderGame(ctx);
             currentScene.interval.intervalRenderer.call(currentScene, currentScene.interval, ctx);
          }
+         ctx.restore();
          
          // update global frame counter and current scene reference
          this.currentScene = currentScene;
          GameHandler.frameCount++;
          
-         // calculate FPS interval required for smooth animation
-         var frameOffset = Math.floor(1000 / this.fps) - (new Date().getTime() - frameStart);
-         GameHandler.maxfps = Math.round(1000 / (frameStart - this.lastFrameStart));
-         this.lastFrameStart = frameStart;
-         if (!GameHandler.paused) setTimeout(GameHandler.start, frameOffset <= 0 ? 1 : frameOffset);
+         // calculate frame total time interval and frame multiplier required for smooth animation
+         var frameInterval = frameStart - GameHandler.frameStart;
+         if (frameInterval === 0) frameInterval = 1;
+         if (GameHandler.frameCount % 16 === 0) GameHandler.maxfps = ~~(1000 / frameInterval);
+         GameHandler.frameMultipler = frameInterval / GameHandler.FPSMS;
+         GameHandler.frameStart = frameStart;
+         
+         // for browsers not supporting requestAnimationFrame natively, we calculate the offset
+         // between each frame to attempt to maintain a smooth fps
+         var frameOffset = ~~(GameHandler.FPSMS - (Date.now() - frameStart));
+         if (!GameHandler.paused) requestAnimFrame(GameHandler.start, frameOffset);
       },
       
       onRenderGame: function onRenderGame(ctx)
@@ -359,7 +319,7 @@ if (typeof Game == "undefined" || !Game)
       },
       
       onRenderScene: function onRenderScene(ctx)
-      {    	  
+      {
       },
       
       onRenderInterval: function onRenderInterval(ctx)
@@ -541,42 +501,15 @@ if (typeof Game == "undefined" || !Game)
       /**
        * Render sprite graphic based on current anim image, frame and anim direction
        * Automatically updates the current anim frame.
-       * 
-       * Optionally this method will automatically correct for objects moving on/off
-       * a cyclic canvas play area - if so it will render the appropriate stencil
-       * sections of the sprite top/bottom/left/right as needed to complete the image.
-       * Note that this feature can only be used if the sprite is absolutely positioned
-       * and not translated/rotated into position by canvas operations.
        */
-      renderSprite: function renderSprite(ctx, x, y, w, cyclic)
+      renderSprite: function renderSprite(ctx, x, y, s)
       {
-         var offset = this.animFrame << 6,
-             fs = this.frameSize;
-         
-         ctx.drawImage(this.animImage, 0, offset, fs, fs, x, y, w, w);
-         
-         if (cyclic)
-         {
-            if (x < 0 || y < 0)
-            {
-               ctx.drawImage(this.animImage, 0, offset, fs, fs,
-                  (x < 0 ? (GameHandler.width + x) : x),
-                  (y < 0 ? (GameHandler.height + y) : y),
-                  w, w);
-            }
-            if (x + w >= GameHandler.width || y + w >= GameHandler.height)
-            {
-               ctx.drawImage(this.animImage, 0, offset, fs, fs,
-                  (x + w >= GameHandler.width ? (x - GameHandler.width) : x),
-                  (y + w >= GameHandler.height ? (y - GameHandler.height) : y),
-                  w, w);
-            }
-         }
+         Game.Util.renderImage(ctx, this.animImage, 0, this.animFrame << 6, this.frameSize, x, y, s);
          
          // update animation frame index
          if (this.animForward)
          {
-            this.animFrame += this.animSpeed;
+            this.animFrame += (this.animSpeed * GameHandler.frameMultipler);
             if (this.animFrame >= this.animLength)
             {
                this.animFrame = 0;
@@ -584,7 +517,7 @@ if (typeof Game == "undefined" || !Game)
          }
          else
          {
-            this.animFrame -= this.animSpeed;
+            this.animFrame -= (this.animSpeed * GameHandler.frameMultipler);
             if (this.animFrame < 0)
             {
                this.animFrame = this.animLength - 1;
@@ -661,15 +594,21 @@ if (typeof Game == "undefined" || !Game)
    {
       Game.EffectActor.superclass.constructor.call(this, p, v);
       this.lifespan = lifespan;
+      this.effectStart = GameHandler.frameStart;
       return this;
    };
    
    extend(Game.EffectActor, Game.Actor,
    {
       /**
-       * Effect lifespan remaining
+       * Effect lifespan in ms
        */
       lifespan: 0,
+      
+      /**
+       * Effect start time
+       */
+      effectStart: 0,
       
       /**
        * Actor expiration test
@@ -678,8 +617,24 @@ if (typeof Game == "undefined" || !Game)
        */
       expired: function expired()
       {
-      	// deduct lifespan from the explosion
-      	return (--this.lifespan === 0);
+        // test to see if the effect has expired
+        return (GameHandler.frameStart - this.effectStart > this.lifespan);
+      },
+      
+      /**
+       * Helper for an effect to return the value multiplied by the ratio of the remaining
+       * lifespan of the effect
+       * 
+       * @param val     value to apply to the ratio of remaining lifespans
+       */
+      effectValue: function effectValue(val)
+      {
+         var result = val - ((val / this.lifespan) * (GameHandler.frameStart - this.effectStart));
+         // this is no longer a simple counter - so we need to crop the value
+         // as the time between frames is not determinate
+         if (result < 0) result = 0;
+         else if (result > val) result = val;
+         return result;
       }
    });
 })();
@@ -762,7 +717,7 @@ if (typeof Game == "undefined" || !Game)
 
 /**
  * Render text into the canvas context.
- * Compatible with FF3, FF3.5, SF4, GC4, OP10
+ * Compatible with FF3.5, SF4, GC4, OP10, IE9
  * 
  * @method Game.drawText
  * @static
@@ -771,17 +726,17 @@ Game.drawText = function(g, txt, font, x, y, col)
 {
    g.save();
    if (col) g.strokeStyle = col;
-   if (g.strokeText)
-   {
-      g.font = font;
-      g.strokeText(txt, x, y);
-   }
-   else if (g.mozDrawText)
-   {
-      g.translate(x, y);
-      g.mozTextStyle = font;
-      g.mozDrawText(txt);
-   }
+   g.font = font;
+   g.strokeText(txt, x, y);
+   g.restore();
+};
+
+Game.centerDrawText = function(g, txt, font, y, col)
+{
+   g.save();
+   if (col) g.strokeStyle = col;
+   g.font = font;
+   g.strokeText(txt, (GameHandler.width - g.measureText(txt).width) / 2, y);
    g.restore();
 };
 
@@ -789,40 +744,176 @@ Game.fillText = function(g, txt, font, x, y, col)
 {
    g.save();
    if (col) g.fillStyle = col;
-   if (g.fillText)
-   {
-      g.font = font;
-      g.fillText(txt, x, y);
-   }
-   else if (g.mozDrawText)
-   {
-      g.translate(x, y);
-      g.mozTextStyle = font;
-      g.mozDrawText(txt);
-   }
+   g.font = font;
+   g.fillText(txt, x, y);
+   g.restore();
+};
+
+Game.centerFillText = function(g, txt, font, y, col)
+{
+   g.save();
+   if (col) g.fillStyle = col;
+   g.font = font;
+   g.fillText(txt, (GameHandler.width - g.measureText(txt).width) / 2, y);
    g.restore();
 };
 
 
+Game.Util = {};
+
 /**
- * Return Audio object support in the browser
- * 
- * @method Game.hasAudio
- * @static
+ * This method will automatically correct for objects moving on/off
+ * a cyclic canvas play area - if so it will render the appropriate stencil
+ * sections of the sprite top/bottom/left/right as needed to complete the image.
+ * Note that this feature can only be used if the sprite is absolutely positioned
+ * and not translated/rotated into position by canvas operations.
  */
-Game.hasAudio = function()
+Game.Util.renderImage = function renderImage(ctx, image, nx, ny, ns, x, y, s)
 {
-   var audioObjSupport = false;
-   try
+   ctx.drawImage(image, nx, ny, ns, ns, x, y, s, s);
+   
+   if (x < 0)
    {
-      // The 'src' parameter is mandatory in Opera 10, so have used an empty string "".
-      // Otherwise, an exception is thrown.
-      var audioObj = new Audio(""); 
-      audioObjSupport = !!(audioObj.canPlayType && audioObj.play);
+      ctx.drawImage(image, nx, ny, ns, ns,
+         GameHandler.width + x, y, s, s);
    }
-   catch (e)
+   if (y < 0)
    {
-      audioObjSupport = false;
+      ctx.drawImage(image, nx, ny, ns, ns,
+         x, GameHandler.height + y, s, s);
    }
-   return audioObjSupport;
+   if (x < 0 && y < 0)
+   {
+      ctx.drawImage(image, nx, ny, ns, ns,
+         GameHandler.width + x, GameHandler.height + y, s, s);
+   }
+   if (x + s > GameHandler.width)
+   {
+      ctx.drawImage(image, nx, ny, ns, ns,
+         x - GameHandler.width, y, s, s);
+   }
+   if (y + s > GameHandler.height)
+   {
+      ctx.drawImage(image, nx, ny, ns, ns,
+         x, y - GameHandler.height, s, s);
+   }
+   if (x + s > GameHandler.width && y + s > GameHandler.height)
+   {
+      ctx.drawImage(image, nx, ny, ns, ns,
+         x - GameHandler.width, y - GameHandler.height, s, s);
+   }
 };
+      
+Game.Util.renderImageRotated = function renderImageRotated(ctx, image, x, y, w, h, r)
+{
+   var w2 = w*0.5, h2 = h*0.5;
+   var rf = function(tx, ty)
+   {
+      ctx.save();
+      ctx.translate(tx, ty);
+      ctx.rotate(r);
+      ctx.drawImage(image, -w2, -h2);
+      ctx.restore();
+   };
+   
+   rf.call(this, x, y);
+   
+   if (x - w2 < 0)
+   {
+      rf.call(this, GameHandler.width + x, y);
+   }
+   if (y - h2 < 0)
+   {
+      rf.call(this, x, GameHandler.height + y);
+   }
+   if (x - w2 < 0 && y - h2 < 0)
+   {
+      rf.call(this, GameHandler.width + x, GameHandler.height + y);
+   }
+   if (x - w2 + w > GameHandler.width)
+   {
+      rf.call(this, x - GameHandler.width, y);
+   }
+   if (y - h2 + h > GameHandler.height)
+   {
+      rf.call(this, x, y - GameHandler.height);
+   }
+   if (x - w2 + w > GameHandler.width && y - h2 + h > GameHandler.height)
+   {
+      rf.call(this, x - GameHandler.width, y - GameHandler.height);
+   }
+};
+
+
+/**
+ * Game prerenderer class.
+ * 
+ * @namespace Game
+ * @class Game.Prerenderer
+ */
+(function()
+{
+   Game.Prerenderer = function()
+   {
+      this.images = [];
+      this._renderers = [];
+      return this;
+   };
+   
+   Game.Prerenderer.prototype =
+   {
+      /**
+       * Image list. Keyed by renderer ID - returning an array also. So to get
+       * the first image output by prerenderer with id "default": images["default"][0]
+       * 
+       * @public
+       * @property images
+       * @type Array
+       */
+      images: null,
+      
+      _renderers: null,
+      
+      /**
+       * Add a renderer function to the list of renderers to execute
+       * 
+       * @param fn {function}    Callback to execute to perform prerender
+       *                         Passed canvas element argument - to execute against - the
+       *                         callback is responsible for setting appropriate width/height
+       *                         of the buffer and should not assume it is cleared.
+       *                         Should return Array of images from prerender process
+       * @param id {string}      Id of the prerender - used to lookup images later
+       */
+      addRenderer: function addRenderer(fn, id)
+      {
+         this._renderers[id] = fn;
+      },
+      
+      /**
+       * Execute all prerender functions - call once all renderers have been added
+       */
+      execute: function execute()
+      {
+         var buffer = document.createElement('canvas');
+         for (var id in this._renderers)
+         {
+            this.images[id] = this._renderers[id].call(this, buffer);
+         }
+      }
+    };
+})();
+
+
+// requestAnimFrame shim
+window.requestAnimFrame = (function()
+{
+   return  window.requestAnimationFrame       || 
+           window.webkitRequestAnimationFrame || 
+           window.mozRequestAnimationFrame    || 
+           window.oRequestAnimationFrame      || 
+           window.msRequestAnimationFrame     || 
+           function(callback, frameOffset)
+           {
+               window.setTimeout(callback, frameOffset);
+           };
+})();

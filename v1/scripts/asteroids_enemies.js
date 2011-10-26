@@ -17,15 +17,15 @@
       {
          t = randomInt(1, 4);
       }
-      eval("this.animImage=g_asteroidImg" + t);
+      this.animImage = g_asteroidImgs[t-1];
       this.type = t;
       
       // randomly setup animation speed and direction
-      this.animForward = (Math.random() < 0.5);
-      this.animSpeed = 0.25 + Math.random();
+      this.animForward = (Rnd() < 0.5);
+      this.animSpeed = 0.3 + Rnd() * 0.5;
       this.animLength = this.ANIMATION_LENGTH;
       this.rotation = randomInt(0, 180);
-      this.rotationSpeed = randomInt(-1, 1) / 25;
+      this.rotationSpeed = (Rnd() - 0.5) / 30;
       
       return this;
    };
@@ -40,7 +40,7 @@
       size: 0,
       
       /**
-       * Asteroid type i.e. which bitmap it is drawn from
+       * Asteroid graphic type i.e. which randomly selected bitmap it is drawn from
        */
       type: 1,
       
@@ -67,66 +67,16 @@
             // render asteroid graphic bitmap
             // bitmap is rendered slightly large than the radius as the raytraced asteroid graphics do not
             // quite touch the edges of the 64x64 sprite - this improves perceived collision detection
-            this.renderSprite(ctx, this.position.x - rad - 2, this.position.y - rad - 2, (rad * 2)+4, true);
+            this.renderSprite(ctx, this.position.x - rad - 2, this.position.y - rad - 2, (rad * 2)+4);
          }
          else
          {
-            // draw asteroid outline circle
-            ctx.shadowColor = ctx.strokeStyle = "white";
-            ctx.translate(this.position.x, this.position.y);
-            ctx.scale(this.size * 0.8, this.size * 0.8);
-            ctx.rotate(this.rotation += this.rotationSpeed);
-            ctx.lineWidth = (0.8 / this.size) * 2;
-            ctx.beginPath();
-            // asteroid wires
-            switch (this.type)
-            {
-               case 1:
-                  ctx.moveTo(0,10);
-                  ctx.lineTo(8,6);
-                  ctx.lineTo(10,-4);
-                  ctx.lineTo(4,-2);
-                  ctx.lineTo(6,-6);
-                  ctx.lineTo(0,-10);
-                  ctx.lineTo(-10,-3);
-                  ctx.lineTo(-10,5);
-                  break;
-               case 2:
-                  ctx.moveTo(0,10);
-                  ctx.lineTo(8,6);
-                  ctx.lineTo(10,-4);
-                  ctx.lineTo(4,-2);
-                  ctx.lineTo(6,-6);
-                  ctx.lineTo(0,-10);
-                  ctx.lineTo(-8,-8);
-                  ctx.lineTo(-6,-3);
-                  ctx.lineTo(-8,-4);
-                  ctx.lineTo(-10,5);
-                  break;
-               case 3:
-                  ctx.moveTo(-4,10);
-                  ctx.lineTo(1,8);
-                  ctx.lineTo(7,10);
-                  ctx.lineTo(10,-4);
-                  ctx.lineTo(4,-2);
-                  ctx.lineTo(6,-6);
-                  ctx.lineTo(0,-10);
-                  ctx.lineTo(-10,-3);
-                  ctx.lineTo(-10,5);
-                  break;
-               case 4:
-                  ctx.moveTo(-8,10);
-                  ctx.lineTo(7,8);
-                  ctx.lineTo(10,-2);
-                  ctx.lineTo(6,-10);
-                  ctx.lineTo(-2,-8);
-                  ctx.lineTo(-6,-10);
-                  ctx.lineTo(-10,-6);
-                  ctx.lineTo(-7,0);
-                  break;
-            }
-            ctx.closePath();
-            ctx.stroke();
+            // draw asteroid vector graphic
+            var imgsize = rad*2 + GLOWSHADOWBLUR*2;
+            Game.Util.renderImageRotated(ctx, GameHandler.bitmaps.images["asteroid"][this.type-1][this.size-1],
+               this.position.x, this.position.y,
+               imgsize, imgsize,
+               this.rotation += this.rotationSpeed);
          }
          ctx.restore();
       },
@@ -174,7 +124,7 @@
       // small ship, alter settings slightly
       if (this.size === 1)
       {
-         this.BULLET_RECHARGE = 45;
+         this.BULLET_RECHARGE_MS = 1300;
          this.RADIUS = 8;
       }
       
@@ -194,7 +144,7 @@
             // player in bottom left of the screen
             p = new Vector(GameHandler.width-48, 48);
          }
-         v = new Vector(-(Math.random() + 1 + size), Math.random() + 0.5 + size);
+         v = new Vector(-(Rnd() + 0.25 + size*0.75), Rnd() + 0.25 + size*0.75);
       }
       else
       {
@@ -209,7 +159,7 @@
             // player in bottom right of the screen
             p = new Vector(0, 48);
          }
-         v = new Vector(Math.random() + 1 + size, Math.random() + 0.5 + size);
+         v = new Vector(Rnd() + 0.25 + size*0.75, Rnd() + 0.25 + size*0.75);
       }
       
       // setup SpriteActor values
@@ -225,7 +175,7 @@
    {
       SHIP_ANIM_LENGTH: 90,
       RADIUS: 16,
-      BULLET_RECHARGE: 60,
+      BULLET_RECHARGE_MS: 1800,
       
       /**
        * True if ship alive, false if ready for expiration
@@ -247,35 +197,35 @@
          // change enemy direction randomly
          if (this.size === 0)
          {
-            if (Math.random() < 0.01)
+            if (Rnd() < 0.01)
             {
-               this.vector.y = -(this.vector.y + (0.25 - (Math.random()/2)));
+               this.vector.y = -(this.vector.y + (0.25 - (Rnd()/2)));
             }
          }
          else
          {
-            if (Math.random() < 0.02)
+            if (Rnd() < 0.02)
             {
-               this.vector.y = -(this.vector.y + (0.5 - Math.random()));
+               this.vector.y = -(this.vector.y + (0.5 - Rnd()));
             }
          }
          
          // regular fire a bullet at the player
-         if (GameHandler.frameCount - this.bulletRecharge > this.BULLET_RECHARGE && scene.player.alive)
+         if (GameHandler.frameStart - this.bulletRecharge > this.BULLET_RECHARGE_MS && scene.player.alive)
          {
-            // ok, update last fired frame and we can now generate a bullet
-            this.bulletRecharge = GameHandler.frameCount;
+            // ok, update last fired time and we can now generate a bullet
+            this.bulletRecharge = GameHandler.frameStart;
             
             // generate a vector pointed at the player
             // by calculating a vector between the player and enemy positions
             var v = scene.player.position.clone().sub(this.position);
             // scale resulting vector down to bullet vector size
-            var scale = (this.size === 0 ? 5.0 : 6.0) / v.length();
+            var scale = (this.size === 0 ? 3.0 : 3.5) / v.length();
             v.x *= scale;
             v.y *= scale;
             // slightly randomize the direction (big ship is less accurate also)
-            v.x += (this.size === 0 ? (Math.random() * 2 - 1) : (Math.random() - 0.5));
-            v.y += (this.size === 0 ? (Math.random() * 2 - 1) : (Math.random() - 0.5));
+            v.x += (this.size === 0 ? (Rnd() * 2 - 1) : (Rnd() - 0.5));
+            v.y += (this.size === 0 ? (Rnd() * 2 - 1) : (Rnd() - 0.5));
             // - could add the enemy motion vector for correct momentum
             // - but problem is this leads to slow bullets firing back from dir of travel
             // - so pretend that enemies are clever enough to account for this...
@@ -283,6 +233,8 @@
             
             var bullet = new Asteroids.EnemyBullet(this.position.clone(), v);
             scene.enemyBullets.push(bullet);
+            
+            if (SOUND && soundManager) soundManager.play('enemy_bomb');
          }
       },
       
@@ -303,7 +255,10 @@
             ctx.translate(this.position.x, this.position.y);
             if (this.size === 0)
             {
+               // scale up the enemy - but also scale down the vector line scale
+               // otherwise it looks too thick compared to the default
                ctx.scale(2, 2);
+               ctx.lineWidth = 0.75;
             }
             
             ctx.beginPath();
@@ -313,7 +268,7 @@
             ctx.lineTo(-8, 3);
             ctx.lineTo(0, -4);
             ctx.closePath();
-            ctx.shadowColor = ctx.strokeStyle = "rgb(100,150,100)";
+            ctx.shadowColor = ctx.strokeStyle = Asteroids.Colours.ENEMY_SHIP_DARK;
             ctx.stroke();
             ctx.beginPath();
             ctx.moveTo(0, -8);
@@ -322,7 +277,7 @@
             ctx.lineTo(-4, -4);
             ctx.lineTo(0, -8);
             ctx.closePath();
-            ctx.shadowColor = ctx.strokeStyle = "rgb(150,200,150)";
+            ctx.shadowColor = ctx.strokeStyle = Asteroids.Colours.ENEMY_SHIP;
             ctx.stroke();
             
             ctx.restore();
