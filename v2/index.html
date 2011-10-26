@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
+<title>Asteroids Reloaded - HTML5 Canvas JavaScript Game Demo by
+	Kevin Roast</title>
+<script src="scripts/soundmanager2.js"></script>
+<script>
+	var soundManagerLoaded = false;
+	soundManager.flashVersion = 9;
+	soundManager.useFastPolling = true;
+	soundManager.useHighPerformance = true;
+	soundManager.debugMode = false;
+	soundManager.onready(function() {
+		soundManagerLoaded = true;
+	});
+	soundManager.ontimeout(function() {
+		soundManagerLoaded = true;
+		soundManager = false;
+	});
+	soundManager.url = 'swf/';
+</script>
+<script src="scripts/mathlib.js"></script>
+<script src="scripts/gamelib.js"></script>
+<script src="scripts/asteroids_main.js"></script>
+<script src="scripts/asteroids_player.js"></script>
+<script src="scripts/asteroids_weapons.js"></script>
+<script src="scripts/asteroids_enemies.js"></script>
+<script src="scripts/asteroids_effects.js"></script>
+<script src="scripts/asteroids_prerender.js"></script>
+<script>
+	DEBUG = {
+		INVINCIBLE : false,
+		COLLISIONRADIUS : false,
+		FPS : true
+	};
+</script>
+<style type="text/css">
+canvas {
+	background-color: #000;
+	border: 1px solid #888;
+}
+</style>
+</head>
+<body>
+	<div class="wrapper">
+		<canvas class="box-shadow" id="canvas" width="640" height="640"></canvas>
+	</div>
+	</div>
+</body>
+</html>
